@@ -1,0 +1,13 @@
+#@ load("@ytt:data", "data")
+
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClassClaim
+metadata:
+  name: #@ data.values.name
+  namespace: #@ data.values.workloadNamespace
+spec:
+  classRef:
+    name: #@ data.values.classname
+  parameters:
+    secretName: #@ data.values.secretName 

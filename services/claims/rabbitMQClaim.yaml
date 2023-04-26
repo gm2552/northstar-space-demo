@@ -1,0 +1,13 @@
+#@ load("@ytt:data", "data")
+
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClassClaim
+metadata:
+  name: #@ data.values.msgbrokerName
+  namespace: #@ data.values.workloadNamespace
+spec:
+  classRef:
+    name: #@ data.values.classname
+  parameters:
+    engineVersion: #@ data.values.engineVersion 

@@ -1,0 +1,34 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xredisclusters.bindable.cache.example.org 
+spec:
+  claimNames:
+    kind: RedisCluster
+    plural: redisclusters
+  connectionSecretKeys:
+  - type
+  - provider
+  - host
+  - port
+  - username
+  - password
+  group: bindable.cache.example.org 
+  names:
+    kind: XRedisCluster
+    plural: xredisclusters
+  versions:
+  - name: v1alpha1
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            description: The OpenAPIV3Schema of this Composite Resource Definition.
+            properties:
+              replicas:
+                description: The desired number of replicas
+                type: integer                
+            type: object
+        type: object    
+    served: true

@@ -1,0 +1,35 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xrdscreds.bindable.database.example.org 
+spec:
+  claimNames:
+    kind: RDSCred
+    plural: rdscreds
+  connectionSecretKeys:
+  - type
+  - provider
+  - host
+  - port
+  - username
+  - password
+  - database
+  group: bindable.database.example.org 
+  names:
+    kind: XRDSCred
+    plural: xrdscreds
+  versions:
+  - name: v1alpha1
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            description: XRD for generating a service bindable secret for pre-provisioned AWS RDS instances.
+            properties:
+              secretName:
+                description: The name of AWS secret stored in AWS Secret Manager
+                type: string                               
+            type: object
+        type: object    
+    served: true
