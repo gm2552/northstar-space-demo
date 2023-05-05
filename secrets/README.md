@@ -1,4 +1,4 @@
-#Secrets
+# Secrets
 
 Secrets configuration for external secrets operator (ESO).  
 
