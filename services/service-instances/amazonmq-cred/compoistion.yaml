@@ -1,15 +1,14 @@
-#@ load("@ytt:data", "data")
 ---
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
   labels:
     provider: "aws"
-  name: xrdscred.bindable.database.example.org
+  name: xrabbitmqbrokercreds.bindable.broker.example.org
 spec:
   compositeTypeRef:
-    apiVersion: bindable.database.example.org/v1alpha1  
-    kind: XRDSCred
+    apiVersion: bindable.broker.example.org/v1alpha1  
+    kind: XRabbitmqBrokerCred
   publishConnectionDetailsWithStoreConfigRef:
     name: default
   resources:
@@ -46,9 +45,7 @@ spec:
                   data:    
                     username: "{{ .username }}"
                     password: "{{ .password }}"
-                    host: "{{ .host }}"
-                    port: "{{ .port }}"
-                    database: "{{ .dbInstanceIdentifier }}"
+                    address: "{{ .address }}"
               dataFrom:
               - extract:
                   conversionStrategy: Default
@@ -58,13 +55,8 @@ spec:
         - apiVersion: v1
           kind: Secret
           namespace: ""
-          fieldPath: data.host
-          toConnectionSecretKey: host
-        - apiVersion: v1
-          kind: Secret
-          namespace: ""
-          fieldPath: data.port
-          toConnectionSecretKey: port
+          fieldPath: data.address
+          toConnectionSecretKey: address
         - apiVersion: v1
           kind: Secret
           namespace: ""
@@ -75,26 +67,17 @@ spec:
           namespace: ""
           fieldPath: data.password
           toConnectionSecretKey: password
-        - apiVersion: v1
-          kind: Secret
-          namespace: ""
-          fieldPath: data.database
-          toConnectionSecretKey: database
     connectionDetails:
     - name: type
-      value: mysql
+      value: rabbitmq
     - name: provider
       value: aws
     - fromConnectionSecretKey: password     
       name: password
-    - fromConnectionSecretKey: database
-      name: database    
     - fromConnectionSecretKey: username
       name: username      
-    - fromConnectionSecretKey: host
-      name: host       
-    - fromConnectionSecretKey: port 
-      name: port           
+    - fromConnectionSecretKey: address
+      name: addresses              
     patches:  
       - fromFieldPath: metadata.name
         toFieldPath: spec.forProvider.manifest.metadata.namespace
@@ -121,12 +104,6 @@ spec:
         toFieldPath: spec.connectionDetails[2].name
         type: FromCompositeFieldPath  
       - fromFieldPath: metadata.name
-        toFieldPath: spec.connectionDetails[3].name
-        type: FromCompositeFieldPath  
-      - fromFieldPath: metadata.name
-        toFieldPath: spec.connectionDetails[4].name
-        type: FromCompositeFieldPath   
-      - fromFieldPath: metadata.name
         toFieldPath: spec.connectionDetails[0].namespace
         type: FromCompositeFieldPath     
       - fromFieldPath: metadata.name
@@ -135,9 +112,4 @@ spec:
       - fromFieldPath: metadata.name
         toFieldPath: spec.connectionDetails[2].namespace
         type: FromCompositeFieldPath  
-      - fromFieldPath: metadata.name
-        toFieldPath: spec.connectionDetails[3].namespace
-        type: FromCompositeFieldPath  
-      - fromFieldPath: metadata.name
-        toFieldPath: spec.connectionDetails[4].namespace
-        type: FromCompositeFieldPath                 
+               

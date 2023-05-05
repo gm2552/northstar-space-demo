@@ -1,0 +1,11 @@
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterInstanceClass
+metadata:
+  name: amazonmq-cred
+spec:
+  description:
+    short: Amazon MQ/Rabbitmq Credentials
+  provisioner:
+    crossplane:
+      compositeResourceDefinition: xrabbitmqbrokercreds.bindable.broker.example.org
