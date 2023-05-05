@@ -1,19 +1,18 @@
-# Service Configuration
+# Services
 
-
-Native public cloud managed services are configured using CrossPlane XRDs and Compositions; on platform services such as AppSSO and Spring Cloud Gateway
-are configured using their native APIs.
+Configuration necessary for provisioning services.  Native public cloud managed services are configured using CrossPlane XRDs and Compositions; on platform services such as 
+AppSSO and Spring Cloud Gateway are configured using their native APIs.
 
 ## Content
 
 Service configuration consists of the following folders and content:
 
-** crossplane **
+**crossplane**
 
 Cross cutting Crossplane configuration.  This includes crossplane `ProviderConfig` such as an AWS provider along
 with a supporting AWS credentials secret.
 
-** service-instances **
+**service-instances**
 
 Configuration needed to create service instances and optional `ClusterInstanceClasses` to integrate with services toolkit dynamic provisioning.  Service instance 
 configuration generally takes two forms:
@@ -23,7 +22,7 @@ paired with a `ClusterInstanceClass` and are instantiated using a `ClassClaim`.
 
 - CRs that instantiate on platform services such as Spring Cloud Gateway and AppSSO. 
 
-** claims **
+**claims**
 
 `ClassClaims` and `ResourceClaimss` enabling workloads to bind to service instances.  
 
