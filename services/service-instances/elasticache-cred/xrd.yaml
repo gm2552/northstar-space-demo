@@ -1,0 +1,36 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xredisclusterscreds.bindable.cache.example.org 
+spec:
+  claimNames:
+    kind: XRedisClustersCred
+    plural: xredisclusterscreds
+  connectionSecretKeys:
+  - type
+  - provider
+  - host
+  - port
+  - password
+  - ssl  
+  group: bindable.cache.example.org 
+  names:
+    kind: XRedisClustersCred
+    plural: xredisclusterscreds
+  versions:
+  - name: v1alpha1
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            description: XRD for generating a service bindable secret for pre-provisioned AWS Elasticache/Redis instances.
+            properties:
+              secretName:
+                description: The name of AWS secret stored in AWS Secret Manager
+                type: string 
+            required:
+            - secretName                              
+            type: object
+        type: object    
+    served: true

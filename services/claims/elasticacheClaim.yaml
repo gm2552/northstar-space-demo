@@ -8,4 +8,4 @@ metadata:
   namespace: #@ data.values.workloadNamespace
 spec:
   classRef:
-    name: #@ data.values.classname
+    name: #@ data.values.className
