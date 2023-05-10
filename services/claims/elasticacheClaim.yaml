@@ -4,8 +4,8 @@
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ClassClaim
 metadata:
-  name: #@ data.values.cacheName
+  name: #@ data.values.name
   namespace: #@ data.values.workloadNamespace
 spec:
   classRef:
-    name: #@ data.values.className
+    name: elaticache

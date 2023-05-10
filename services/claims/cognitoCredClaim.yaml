@@ -8,6 +8,6 @@ metadata:
   namespace: #@ data.values.workloadNamespace
 spec:
   classRef:
-    name: elaticache-cred
+    name: cognito-cred
   parameters:
     secretName: #@ data.values.secretName 

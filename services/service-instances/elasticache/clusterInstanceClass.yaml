@@ -2,7 +2,7 @@
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ClusterInstanceClass
 metadata:
-  name: redis
+  name: elaticache
 spec:
   description:
     short: Elasticache Redis

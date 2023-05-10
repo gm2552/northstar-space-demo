@@ -2,10 +2,10 @@
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ClusterInstanceClass
 metadata:
-  name: rds-creds
+  name: cognito-cred
 spec:
   description:
-    short: AWS RDS Credentials
+    short: AWS Cognitor Credentials
   provisioner:
     crossplane:
-      compositeResourceDefinition: xrdscreds.bindable.database.example.org
+      compositeResourceDefinition: xcognitocreds.bindable.auth.example.org 

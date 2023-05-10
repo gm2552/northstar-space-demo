@@ -4,10 +4,10 @@
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ClassClaim
 metadata:
-  name: #@ data.values.msgbrokerName
+  name: #@ data.values.name
   namespace: #@ data.values.workloadNamespace
 spec:
   classRef:
-    name: #@ data.values.className
+    name: amazonmq
   parameters:
     engineVersion: #@ data.values.engineVersion 

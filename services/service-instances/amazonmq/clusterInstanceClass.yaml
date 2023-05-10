@@ -2,7 +2,7 @@
 apiVersion: services.apps.tanzu.vmware.com/v1alpha1
 kind: ClusterInstanceClass
 metadata:
-  name: rabbitmq
+  name: amazonmq
 spec:
   description:
     short: Amazon MQ/Rabbitmq

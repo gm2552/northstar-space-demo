@@ -8,6 +8,6 @@ metadata:
   namespace: #@ data.values.workloadNamespace
 spec:
   classRef:
-    name: #@ data.values.className
+    name: amazonmq-cred
   parameters:
     secretName: #@ data.values.secretName 
