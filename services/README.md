@@ -40,6 +40,12 @@ Provider to consume AmazonMQ APIs.  It requires that an AWS `ProviderConfig` be 
 This is a variant of the AmazonMQ service instance type and assumes a RabbitMQ instance was already created out of band.  It is implemented with a CrossPlane XRD/Composition which wraps an `ExternalSecrect`.  The `ExternalSecret` references a secret inside AWS Secret Manger which contains connectivity and authentication information.  It requires the 
 a `ClusterSecretStore` be configured that can access AWS Secrets Manger for given account and AWS region.
 
+### Cognito Cred
+
+This service instance type assumes an AWS Cognito User Pool and domain was already created out of band.  It is implemented with a CrossPlane XRD/Composition which wraps an `ExternalSecrect`.  The `ExternalSecret` references a secret inside AWS Secret Manger which contains connectivity and authentication information.  It requires the 
+a `ClusterSecretStore` be configured that can access AWS Secrets Manger for given account and AWS region.
+
+
 ### Elasticache
 
 This service instance type utilizes Amazon Elasticache and creates AWS managed Redis services.  It is implemented with a CrossPlane XRD/Composition which utilizes the 
@@ -78,6 +84,11 @@ A `ClassClaim` that dynamically provisions an AWS managed RabbitMQ instance.
 
 A `ClassClaim` that consumes a pre-provisioned AWS managed RabbitMQ instance.  It requires that the name of the AWS secret that contains the connectivity and auth info to 
 be provided.
+
+### RDS Cred
+
+A `ClassClaim` that consumes a pre-provisioned AWS managed Cognito user pool and domain.  It requires that the name of the AWS secret that contains the connectivity and 
+auth info to be provided.
 
 ### Elasticache
 
