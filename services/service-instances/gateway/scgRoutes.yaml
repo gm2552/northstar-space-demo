@@ -27,7 +27,7 @@ spec:
     - ui-secure    
 #@ end
   service:
-    uri: #@ 'http://where-for-dinner-ui.' + data.values.workloadNamespace
+    name: where-for-dinner-ui
 ---
 apiVersion: "tanzu.vmware.com/v1"
 kind: SpringCloudGatewayMapping
@@ -59,7 +59,8 @@ spec:
 #@ if data.values.enableSecurity == True:  
     tokenRelay: true 
 #@ end
-    uri: #@ 'http://where-for-dinner-search.' + data.values.workloadNamespace
+  service:
+    name: where-for-dinner-search
 ---
 apiVersion: "tanzu.vmware.com/v1"
 kind: SpringCloudGatewayMapping
@@ -89,8 +90,9 @@ spec:
     - search-api
 #@ if data.values.enableSecurity == True:  
     tokenRelay: true 
-#@ end    
-    uri: #@ 'http://where-for-dinner-availability.' + data.values.workloadNamespace
+#@ end  
+  service: 
+    name: where-for-dinner-availability
 ---
 apiVersion: "tanzu.vmware.com/v1"
 kind: SpringCloudGatewayMapping

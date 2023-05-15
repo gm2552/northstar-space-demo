@@ -1,6 +1,6 @@
 #@data/values
 ---
 gatewayName: where-for-dinner-gateway
-workloadNamespace: workloads
+workloadNamespace: where-for-dinner
 enableSecurity: false
 appWorkloadURL: http://where-for-dinner.perfect300rock.com

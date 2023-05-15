@@ -16,7 +16,7 @@ spec:
       value: "17"
   env:
   - name: spring_profiles_active
-    value: mysql,rabbitmq
+    value: mysql,rabbitmq,secure
   params:
   - name: ports
     value:
@@ -32,11 +32,11 @@ spec:
       owner: where-for-dinner-team
       description: Core Where For Dinner service for retrieving dining availability
   serviceClaims:
-#  - name: sso
-#    ref:
-#      apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-#      kind: ResourceClaim
-#      name: appsso-where-for-dinner
+  - name: sso
+    ref:
+      apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+      kind: ClassClaim
+      name: auth-where-for-dinner
   - name: rmq
     ref:
       apiVersion: services.apps.tanzu.vmware.com/v1alpha1
