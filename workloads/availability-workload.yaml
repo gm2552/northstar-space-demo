@@ -1,10 +1,10 @@
 apiVersion: carto.run/v1alpha1
 kind: Workload
 metadata:
-  name: where-for-dinner-availability
+  name: availability
   labels:
     apps.tanzu.vmware.com/workload-type: server
-    app.kubernetes.io/part-of: where-for-dinner-availability
+    app.kubernetes.io/part-of: availability
     apps.tanzu.vmware.com/auto-configure-actuators: "true"
     apps.tanzu.vmware.com/has-tests: "true"
     apis.apps.tanzu.vmware.com/register-api: "true"
