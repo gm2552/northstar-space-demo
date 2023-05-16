@@ -1,0 +1,25 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: search-proc.workloads.tap.20230516101651.0.0
+spec:
+  refName: search-proc.workloads.tap
+  version: 20230516101651.0.0
+  releaseNotes: |
+    Release v20230516101651.0.0 of package search-proc.workloads.tap
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: reg.perfect300rock.com/tapdev/supply-chain/search-proc-workloads-bundle@sha256:dc18f7c40d6cd4826f32fb22720dcf4816f66971cebb39bc0363ba91a5739658
+      template:
+      - ytt:
+          paths:
+          - .
+      - kbld:
+          paths:
+          - .imgpkg/images.yml
+          - '-'
+      deploy:
+      - kapp: {}
+
