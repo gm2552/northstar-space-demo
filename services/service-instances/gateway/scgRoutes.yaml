@@ -92,7 +92,7 @@ spec:
     tokenRelay: true 
 #@ end    
   service:
-    name: where-for-dinner-availability
+    name: availability
 ---
 apiVersion: "tanzu.vmware.com/v1"
 kind: SpringCloudGatewayMapping
