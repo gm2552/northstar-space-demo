@@ -90,8 +90,8 @@ spec:
     - search-api
 #@ if data.values.enableSecurity == True:  
     tokenRelay: true 
-#@ end  
-  service: 
+#@ end    
+  service:
     name: where-for-dinner-availability
 ---
 apiVersion: "tanzu.vmware.com/v1"
