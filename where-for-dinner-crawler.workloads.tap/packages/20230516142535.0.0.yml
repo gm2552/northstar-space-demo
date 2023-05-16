@@ -1,0 +1,25 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: where-for-dinner-crawler.workloads.tap.20230516142535.0.0
+spec:
+  refName: where-for-dinner-crawler.workloads.tap
+  version: 20230516142535.0.0
+  releaseNotes: |
+    Release v20230516142535.0.0 of package where-for-dinner-crawler.workloads.tap
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-crawler-workloads-bundle@sha256:df17f4b479e86ea635ca8ac8d8fc38a236935f31f7a06626a22d92459a19b5da
+      template:
+      - ytt:
+          paths:
+          - .
+      - kbld:
+          paths:
+          - .imgpkg/images.yml
+          - '-'
+      deploy:
+      - kapp: {}
+
