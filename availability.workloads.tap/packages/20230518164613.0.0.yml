@@ -1,0 +1,25 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: availability.workloads.tap.20230518164613.0.0
+spec:
+  refName: availability.workloads.tap
+  version: 20230518164613.0.0
+  releaseNotes: |
+    Release v20230518164613.0.0 of package availability.workloads.tap
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: reg.perfect300rock.com/tapdev/supply-chain/availability-workloads-bundle@sha256:e9bdf6c0d3e73765eacd28867239998f6a6359d363b1a5f8135861f141da900f
+      template:
+      - ytt:
+          paths:
+          - .
+      - kbld:
+          paths:
+          - .imgpkg/images.yml
+          - '-'
+      deploy:
+      - kapp: {}
+
