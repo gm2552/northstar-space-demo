@@ -2,4 +2,5 @@
 ---
 gatewayName: where-for-dinner-gateway
 workloadNamespace: where-for-dinner
-enableSecurity: false
+enableSecurity: true
+secret: testSecret
