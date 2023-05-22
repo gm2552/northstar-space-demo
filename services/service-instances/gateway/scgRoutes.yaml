@@ -15,8 +15,7 @@ spec:
     filters:
     - StripPrefix=0
     tags:
-    - ui
-#@ if data.values.enableSecurity == True:    
+    - ui  
   - predicates:
     - Path=/diningsearch/**
     - Method=GET
@@ -25,7 +24,6 @@ spec:
     ssoEnabled: true    
     tags:
     - ui-secure    
-#@ end
   service:
     name: where-for-dinner-ui
 ---
@@ -56,9 +54,7 @@ spec:
     - RemoveRequestHeader=Forwarded
     tags:
     - search-api
-#@ if data.values.enableSecurity == True:  
     tokenRelay: true 
-#@ end
   service:
     name: where-for-dinner-search
 ---
@@ -87,10 +83,8 @@ spec:
     - RewritePath=/api/availability(?<segment>/?.*), $\{segment}
     - RemoveRequestHeader=Forwarded
     tags:
-    - search-api
-#@ if data.values.enableSecurity == True:  
-    tokenRelay: true 
-#@ end    
+    - search-api 
+    tokenRelay: true   
   service:
     name: availability
 ---
