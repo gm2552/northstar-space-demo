@@ -2,9 +2,12 @@
 Configuration repository for NorthStar Space Apps demo.  This repository contains configuration in various folders and branches
 that include initial bootstrapping configuration as well as GitOps based configurations.
 
-## Installation
+## Dmeo Installation
 
-This demo is split into phases each with increasing levels of automation.  Please see the 
+This demo is split into phases each with increasing levels of automation:
+
+[Phase 1](installation/phase1/README.md)
+
 
 ## Repository Content
 

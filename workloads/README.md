@@ -5,7 +5,7 @@ defined in it's own yaml configuration file.
 
 ## Source Code
 
-Each workload references a GitHub repository that contains its source code.  Currently, the application source code is located in the 
+Each workload resource references a GitHub repository that contains its source code.  Currently, the application source code is located in the 
 repository at [https://github.com/gm2552/where-for-dinner-northstar](https://github.com/gm2552/where-for-dinner-northstar).
 
 ## Build and Package
