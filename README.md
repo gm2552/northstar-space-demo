@@ -2,11 +2,17 @@
 Configuration repository for NorthStar Space Apps demo.  This repository contains configuration in various folders and branches
 that include initial bootstrapping configuration as well as GitOps based configurations.
 
+## Installation
+
+This demo is split into phases each with increasing levels of automation.  Please see the 
+
 ## Repository Content
 
 This repository consists of multiple branches where each branch serves a specific configuration role.
 
 * main - Consists of the application workload.yaml files as well as service configuration that may be incorporated later on into `space` templates.
+* deliverables-test - Consists of carvel `package` and `packageinstall` resources to install the workloads into run clusters or a `space`
+
 
 ### Main Branch
 
