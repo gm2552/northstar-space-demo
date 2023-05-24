@@ -165,3 +165,28 @@ run the following command from the `services/service-offerings` directory.
 kubectl apply -f . --recursive
 ```
 
+### Create Services, Secrets, and Claims
+
+All services (with the exception of Spring Cloud Gateway) are AWS cloud managed services.  The following sections will provide high level details of provisioning each service
+type, creating a secret for each provisioned service instance, and creating a `ClassClaim` for each provisioned service.  Services can be created using AWS CLI commands, however
+the following steps will use the AWS Web Console.
+
+#### RabbitMQ
+
+You will create a RabbitMQ broker for each cluster, so you will need to repeat the steps below for each cluster.
+
+To create a RabbitMQ instance, search for AmazonMQ in the AWS Web Console.  Click "Create brokers" and select RabbitMQ as the broker engine.  You can choose settings of your
+preference through the rest of the wizard, but you will need to provide a username/password which you will need to remember when creating the secret.   You should also select
+"Private access" for "Access type".  After providing all settings, click "Next" then "Create broker"; it may take up to 20 minutes for the broker to be provisioned.
+
+After the broker has been created, click the broker name from the list of brokers and scroll down to the "Connections" sections.  Note the AMQP endpoint as this will be 
+used in the secret.
+
+To create RabbitMQ secret, search for "Secrets Manager" in the AWS Web Console, select "Store a new secret" and select "Other type of secret".  Provide the following key/value
+information:
+
+Key           | Value
+------------- | -------------
+username      | <username>
+password      | <password>
+address       | <amqp endpoint>
