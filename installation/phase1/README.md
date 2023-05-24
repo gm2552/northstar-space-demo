@@ -153,7 +153,7 @@ Finally, create a `ClusterSecretStore` in each cluster using the `secrets/eso/aw
 cluster's AWS region.
 
 ```
-ytt -f awsSecretStore.yaml -f values.yaml -v aws.secmgr.region=<region>
+ytt -f awsSecretStore.yaml -f values.yaml -v aws.secmgr.region=<region> | kubectl apply -f-
 ```
 
 ### Install Service Offerings
@@ -182,11 +182,60 @@ preference through the rest of the wizard, but you will need to provide a userna
 After the broker has been created, click the broker name from the list of brokers and scroll down to the "Connections" sections.  Note the AMQP endpoint as this will be 
 used in the secret.
 
-To create RabbitMQ secret, search for "Secrets Manager" in the AWS Web Console, select "Store a new secret" and select "Other type of secret".  Provide the following key/value
+To create a RabbitMQ secret, search for "Secrets Manager" in the AWS Web Console, select "Store a new secret" and select "Other type of secret".  Provide the following key/value
 information:
 
 Key           | Value
 ------------- | -------------
-username      | <username>
-password      | <password>
-address       | <amqp endpoint>
+username      | \<username\>
+password      | \<password\>
+address       | \<amqp endpoint\>
+
+Click "Next" and provide a secret name starting the the prefix `rmq-broker`.  For example: `rmq-broker-credentail\where-for-dinner`.  Select default for the rest of the settings
+and screens and finally click "store".  
+    
+To create a `ClassClaim` for the RabbitMQ instance, run the following command from the "services/claims" directory replacing <namespace> with the workload 
+namespace and <secretName> with the secret name from the above step.
+    
+```
+ytt -f amazonMQCredClaim.yaml -v name=msgbroker-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
+```
+
+#### Redis 
+
+You will create a Redis instance for each cluster, so you will need to repeat the steps below for each cluster.
+
+To create a Redis instance, search for Elasticache in the AWS Web Console.  Click "Redis Clusters" in the navigation bar on the left side of the screen and click "Create Redis 
+Cluster."  Select "Configure and create a new cluster"  You can generally use the default settings, but you will likely want to use a smaller node type such 
+as `cache.t2.small.`  If don't already have a subnet group, you will need create a new one with a name of your choice.  
+
+Click next, and this the "security" settings, select "Enable" for "Encryption in transit" and select "Redis AUTH default user access" for "Access Control"  You will 
+need to provide a "Redis Auth token" which is effectively a random password; you will need this password in the secrets section.  In the "Selected security groups" 
+click "manage" and search for "default".  Click the checkbox next to the "default" security group and click the "choose" button.  You can disable backups if you like.  
+Click "Next" then click "Create."
+
+
+After the cluster has been created and is available, click the cluster name from the list of Redis clusters and scroll down to the "nodes" sections.  Note the primary endpoint
+as this will be used as the host field in the secret (minus the port at the end of the endpoint).
+
+
+To create a Redis secret, search for "Secrets Manager" in the AWS Web Console, select "Store a new secret" and select "Other type of secret".  Provide the following key/value
+information:
+
+Key           | Value
+------------- | -------------
+password      | \<password\>
+ssl           | \<true\>
+port          | \<6379\>
+host          | \<primary endpoint without the port\>
+
+Click "Next" and provide a secret name starting the the prefix `redis-cache`.  For example: `redis-cache-credentail\where-for-dinner`.  Select default for the rest of the settings
+and screens and finally click "store".  
+    
+To create a `ClassClaim` for the Redis instance, run the following command from the "services/claims" directory replacing <namespace> with the workload 
+namespace and <secretName> with the secret name from the above step.
+    
+```
+ytt -f rdsCredCaim.yaml -v name=cache-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
+```
+
