@@ -333,4 +333,16 @@ namespace and <secretName> with the secret name from the above step.
 ytt -f cognitoCredClaim.yaml -v name=auth-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
 ```
 
+### Deploy Workloads
 
+> **Note**
+> This section is in flux as new features are added/tested in the Space control plane.
+
+Workload images and configuration are stored in an OCI registry and a GitOps repository.  The `deliverables-test` branch of this repository is one such GitOps repository and 
+can be used to deploy workloads to the clusters.
+
+To deploy the workloads to the clusters, run the following command within the root directory of the `deliverables-test` branch.
+
+```
+kubectl apply -f . --recursive
+```
