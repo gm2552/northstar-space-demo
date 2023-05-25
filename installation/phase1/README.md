@@ -73,7 +73,7 @@ tanzu package install eso --package-name external-secrets.apps.tanzu.vmware.com 
 
 A `ClusterSecretStore` to be used with AWS secrets manager will configured later in this document.
 
-### Install Spring Cloud Gateway
+### Install Spring Cloud Gateway Operator
 
 HTTP request routing is handle by Spring Cloud Gateway (SCG).  The SCG package is also included as part of the TAP run profile.  Spring Cloud Gateway needs to be installed
 into the `scg` namespace which requires a custom values file to be created.  Create a file named `scg.yaml` and populate it with the following content:
