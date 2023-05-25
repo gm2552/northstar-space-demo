@@ -88,7 +88,7 @@ scgOperator:
 To install the SCG package, run the following Tanzu CLI command against each cluster (version number may differ):
 
 ```
-tanzu package install scg --package-name spring-cloud-gateway.tanzu.vmware.com --version 2.0.0+tap.3 --values-file scg.yaml
+tanzu package install scg --package-name spring-cloud-gateway.tanzu.vmware.com --version 2.0.0-tap.5 --values-file scg.yaml
 ```
 
 ### Configure AWS CloudSecretStore
