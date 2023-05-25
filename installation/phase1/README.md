@@ -68,7 +68,7 @@ Operator (ESO) into the clusters.  The External Secrets Operator package is incl
 command against each cluster (version number may differ):
 
 ```
-tanzu package install eso --package-name external-secrets.apps.tanzu.vmware.com --version 0.6.1+tap.6
+tanzu package install eso --package-name external-secrets.apps.tanzu.vmware.com --version 0.6.1+tap.6 -n tap-install
 ```
 
 A `ClusterSecretStore` to be used with AWS secrets manager will configured later in this document.
