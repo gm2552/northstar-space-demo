@@ -215,8 +215,8 @@ click "manage" and search for "default".  Click the checkbox next to the "defaul
 Click "Next" then click "Create."
 
 
-After the cluster has been created and is available, click the cluster name from the list of Redis clusters and scroll down to the "nodes" sections.  Note the primary endpoint
-as this will be used as the host field in the secret (minus the port at the end of the endpoint).
+After the Redis cluster has been created and is available, click the cluster name from the list of Redis clusters and scroll down to the "nodes" sections.  
+Note the primary endpoint as this will be used as the host field in the secret (minus the port at the end of the endpoint).
 
 
 To create a Redis secret, search for "Secrets Manager" in the AWS Web Console, select "Store a new secret" and select "Other type of secret".  Provide the following key/value
@@ -225,8 +225,8 @@ information:
 Key           | Value
 ------------- | -------------
 password      | \<password\>
-ssl           | \<true\>
-port          | \<6379\>
+ssl           | true
+port          | 6379
 host          | \<primary endpoint without the port\>
 
 Click "Next" and provide a secret name starting the the prefix `redis-cache`.  For example: `redis-cache-credentail\where-for-dinner`.  Select default for the rest of the settings
@@ -238,4 +238,99 @@ namespace and <secretName> with the secret name from the above step.
 ```
 ytt -f rdsCredCaim.yaml -v name=cache-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
 ```
+
+#### MySQL 
+
+You will create a single MySQL instance to be shared across all clusters.  You will need to only create the MySQL instance once, however, the secrets and claims 
+creation must be done in each cluster.
+
+To create a MySQL instance, search for RDS in the AWS Web Console, click the "Create database" button, select "Standard create", and select "Aurora (MySQL Compabile)."  
+Select "Dev/Test" as the template, give the cluster a name of your choice, and supply a master username and password in "Credential Settings" (you will need the user/password)
+in the appropriate secret fields).  For "Instance configuration", select a smaller size in the "Burstable classes" class; db.t4g.large is appropriate.  Under "Connectivity", 
+chose "Yes" for "Public access."  You can turn off performance insights if you wish.  Under "Additional configuration", provide an "Initial database name" such as 
+"dinner"; you can disable backups as well if you wish.  Finally, click "Create database.
+
+After the database has been created and is available, click on the writer instance of your database from the list of databases clusters and scroll down to the 
+"Connectivity & security" section.  Note the endpoint and port as these will be used as the host and port fields in the secret.
+
+
+To create a MySQL secret, search for "Secrets Manager" in the AWS Web Console, select "Store a new secret" and select "Other type of secret".  Provide the following key/value
+information:
+
+Key                  | Value
+-------------------- | -------------
+dbInstanceIdentifier | \<Initial database name\>
+engine               | \<aurora-mysql\>
+port                 | 3306
+host                 | \<endpoint\>
+username             | \<username\>
+password             | \<password\>
+
+Click "Next" and provide a secret name starting the the prefix `rds-db`.  For example: `rds-db-credentail\where-for-dinner`.  Select default for the rest of the settings
+and screens and finally click "store".  
+    
+To create a `ClassClaim` for the MySQL instance, run the following command from the "services/claims" directory replacing <namespace> with the workload 
+namespace and <secretName> with the secret name from the above step.
+    
+```
+ytt -f rdsCredCaim.yaml -v name=db-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
+```
+
+#### Cognito 
+
+You will create a single Cognito user pool that will be shared across all clusters, however, the secrets and claims creation must be done in each cluster.
+
+To create a Cognito user pool, search for Cognito in the AWS Web Console and click "Create user pool."  For provider type, select "Cognito user pool" choose "Email" as the
+sign-in option.  For security requirements, you can choose the defaults unless you want to disable multi-factor authentication.  On the next screen, you may add
+additional required attributes, but only email is needed.  For message delivery, "Send email with Cognito" is sufficient if you don't expect a lot traffic for self service
+sign up.
+
+On the "Integrate your app screen", provide a name for you pool, select "Use the Cognito Hosted UI", and choose to "Use a Cognito domain."  Choose a subdomain appropriate
+for the application like "where-for-dinner" or "wfd".  In the "Initiate app client" section, give the application a name like "Where For Dinner" and select "Generate a
+client secret.  Enter a "Allowed callback URL" that will be the redirect URL after you successfully login; you can come back and update this later if you don't know
+the URL until after the Where For Dinner application is deployed.  You can also configure and add additional identify providers like Facebook at a later time.  Review all
+entries and click "Create user pool."
+
+After the user pool has been created and is available, click you new user pool from the list of user pools and note the User pool ID and the region where you user pool
+exists.  This will part of the be `issueruri` field of the secret.  The `issueruri` will have the format of 
+`https://cognito-idp.<region>.amazonaws.com/<user pool id>.  Next click on the "App Integration tab", scroll down to the "App clients and analytics" section, and click on
+your application name.  Note the Client Id and Client secrets; these will be used in the corresponding fields of the secret.
+
+To create a Cognito secret, search for "Secrets Manager" in the AWS Web Console, select "Store a new secret" and select "Other type of secret".  Provide the following key/value
+information:
+
+Key                        | Value
+-------------------------- | -------------
+authorizationgranttypes    | authorization_code
+clientauthenticationmethod | client_secret_basic
+clientid                   | \<client id\>
+clientsecret               | \<client secret\>
+issueruri                  | \<issuer uri\>
+scope                      | openid
+
+Click "Next" and provide a secret name starting the the prefix `cognito-auth`.  For example: `cognito-auth-credentail\where-for-dinner`.  Select default for the rest of the settings
+and screens and finally click "store".  
+
+To create a `ClassClaim` for the Cognito user pool, run the following command from the "services/claims" directory replacing <namespace> with the workload 
+namespace and <secretName> with the secret name from the above step.
+    
+```
+ytt -f cognitoCredClaim.yaml -v name=auth-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
+```
+
+#### Spring Cloud Gateway 
+
+You will create a Spring Cloud Gateway (SCG) instance for each cluster, so you will need to repeat the steps below for each cluster.  Unlike the other cloud managed services,
+the gateway runs on the cluster, so there is no need to create any additional service instances or secret configuration in the AWS Web console.
+
+The gateway uses the Cognito user pool to manage auth operations, so you will need to provide the gateway with the name of the secret that holds the Cognito 
+credentials.
+
+To create an instance of the gateway, run the following command from the "services/claims" directory replacing <namespace> with the workload 
+namespace and <secretName> with the secret name from the above step.
+    
+```
+ytt -f cognitoCredClaim.yaml -v name=auth-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
+```
+
 
