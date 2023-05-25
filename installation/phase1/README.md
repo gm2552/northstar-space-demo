@@ -346,3 +346,7 @@ To deploy the workloads to the clusters, run the following command within the ro
 ```
 kubectl apply -f . --recursive
 ```
+
+### Create GNS
+
+TBD
