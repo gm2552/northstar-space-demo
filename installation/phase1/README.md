@@ -132,7 +132,7 @@ When creating the policy, use an appropriate policy name that matches the region
 For example, use the following command when creating the policy for us-west-1.
 
 ```
-aws iam create-policy --policy-name tap-eso-reader-us-west-1 --policy-document file://my-policy.json --regsion us-west-1
+aws iam create-policy --policy-name tap-eso-reader-us-west-1 --policy-document file://my-policy.json --region us-west-1
 ```
 
 The eksctl command may be the easiest method for creating the service account in each cluster.  Use the following command to create the service account and role 
