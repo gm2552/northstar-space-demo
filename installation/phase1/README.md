@@ -360,6 +360,18 @@ namespace.
 kubectl apply -f . --recursive -n <namespace>
 ```
 
+### Deploy Gateway Routes
+
+Routes are connected to a gateway to direct transactions to the appropriate services.
+
+To deploy the routes to the gateway provisioned in its section above, run the following command within the `workloads/routes` director of the main branch replacing 
+<namespace> and <gateway> with your workload namespace and the gateway name provisioned above.
+
+```
+kubectl apply -f scgRoutes.yaml -v workloadNamespace -v gatewayName=<gateway> | kubectl apply -f-
+```
+
+
 ### Create GNS
 
 TBD
