@@ -1,0 +1,35 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xrabbitmqbrokercreds.bindable.broker.example.org
+spec:
+  claimNames:
+    kind: XRabbitmqBrokerCred
+    plural: xrabbitmqbrokercreds
+  connectionSecretKeys:
+  - type
+  - provider
+  - addresses
+  - username
+  - password
+  group: bindable.broker.example.org
+  names:
+    kind: XRabbitmqBrokerCred
+    plural: xrabbitmqbrokercreds
+  versions:
+  - name: v1alpha1
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            description: XRD for generating a service bindable secret for pre-provisioned AWS AmazonMQ/RabbitMQ instances.
+            properties:
+              secretName:
+                description: The name of AWS secret stored in AWS Secret Manager
+                type: string 
+            required:
+            - secretName                              
+            type: object
+        type: object    
+    served: true

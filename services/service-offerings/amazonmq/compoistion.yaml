@@ -1,0 +1,87 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  labels:
+    provider: "aws"
+  name: xrabbitmqbrokers.bindable.database.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: bindable.database.example.org/v1alpha1  
+    kind: XRabbitmqBroker
+  writeConnectionSecretsToNamespace: crossplane-system
+  resources:
+  - name: password
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: secretgen.k14s.io/v1alpha1
+            kind: Password
+            metadata:
+              name: ""
+              namespace: crossplane-system
+            spec:
+              length: 64
+              secretTemplate:
+                type: Opaque
+                stringData:
+                  password: $(value)
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.manifest.metadata.name
+  - name: broker 
+    base:
+      apiVersion: mq.aws.upbound.io/v1beta1
+      kind: Broker
+      spec:
+        forProvider:
+          brokerName: ""
+          region: #@ data.values.aws.rmq.region
+          engineType: RabbitMQ
+          engineVersion: 3.10.10
+          hostInstanceType: mq.m5.large
+          user:
+          - passwordSecretRef:
+              key: password
+              namespace: crossplane-system
+            username: admin
+          subnetIds: #@ data.values.aws.rmq.subnets
+          securityGroups: #@ data.values.aws.rmq.securityGroups
+        deletionPolicy: Delete
+        writeConnectionSecretToRef:
+          namespace: crossplane-system            
+    connectionDetails:
+    - name: type
+      value: rabbitmq
+    - name: provider
+      value: aws
+    - name: password
+      fromConnectionSecretKey: attribute.password
+    - name: username
+      fromFieldPath: spec.forProvider.user[0].username
+    - name: addresses
+      fromFieldPath: status.atProvider.instances[0].endpoints[0]
+    - name: port
+      value: "5432"
+    patches:    
+    - fromFieldPath: "metadata.uid"
+      toFieldPath: "spec.writeConnectionSecretToRef.name"
+      transforms:
+        - type: string
+          string:
+            fmt: "%s-rmqtest"
+    - fromFieldPath: spec.parameters.engineVersion
+      toFieldPath: spec.forProvider.engineVersion
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.user[0].passwordSecretRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.brokerName
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name

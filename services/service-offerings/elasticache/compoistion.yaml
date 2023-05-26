@@ -1,0 +1,58 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  labels:
+    provider: "aws"
+  name: xredisclusters.bindable.cache.example.org 
+spec:
+  compositeTypeRef:
+    apiVersion: bindable.cache.example.org/v1alpha1  
+    kind: XRedisCluster
+  writeConnectionSecretsToNamespace: crossplane-system
+  resources:  
+  - name: subnetgroup
+    base:
+      apiVersion: elasticache.aws.upbound.io/v1beta1
+      kind: SubnetGroup
+      spec:
+        forProvider:
+          region: #@ data.values.aws.redis.region
+          subnetIds: #@ data.values.aws.redis.subnets
+          description: Subnets for Redis
+  - name: rediscluster
+    base:
+      apiVersion: elasticache.aws.upbound.io/v1beta1
+      kind: Cluster
+      spec:
+        forProvider:
+          region: #@ data.values.aws.redis.region
+          engine: redis
+          nodeType: cache.r6g.large
+          numCacheNodes: 1
+          parameterGroupName: default.redis7
+          port: 6379
+          subnetGroupNameSelector:
+            matchControllerRef: true
+          securityGroupIds: #@ data.values.aws.redis.securityGroups
+        writeConnectionSecretToRef:
+          namespace: default 
+    connectionDetails:
+    - name: type
+      value: redis
+    - name: provider
+      value: aws
+    - name: host
+      fromFieldPath: status.atProvider.cacheNodes[0].address
+    - name: port
+      value: "6379"
+    patches: #!TODO make this bindable(?)
+    - fromFieldPath: "metadata.uid"
+      toFieldPath: "spec.writeConnectionSecretToRef.name"
+      transforms:
+        - type: string
+          string:
+            fmt: "%s-redis"
+    - fromFieldPath: spec.writeConnectionSecretToRef.namespace
+      toFieldPath: spec.writeConnectionSecretToRef.namespace

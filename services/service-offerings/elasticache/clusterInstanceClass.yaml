@@ -1,0 +1,11 @@
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterInstanceClass
+metadata:
+  name: elaticache
+spec:
+  description:
+    short: Elasticache Redis
+  provisioner:
+    crossplane:
+      compositeResourceDefinition: xredisclusters.bindable.cache.example.org

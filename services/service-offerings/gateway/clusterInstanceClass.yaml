@@ -1,0 +1,11 @@
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterInstanceClass
+metadata:
+  name: spring-cloud-gateway
+spec:
+  description:
+    short: Spring Cloud Gateway Commercial
+  provisioner:
+    crossplane:
+      compositeResourceDefinition: xspringcloudgateways.gateway.example.org 

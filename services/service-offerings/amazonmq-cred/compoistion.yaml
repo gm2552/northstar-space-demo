@@ -1,0 +1,115 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  labels:
+    provider: "aws"
+  name: xrabbitmqbrokercreds.bindable.broker.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: bindable.broker.example.org/v1alpha1  
+    kind: XRabbitmqBrokerCred
+  publishConnectionDetailsWithStoreConfigRef:
+    name: default
+  resources:
+  - base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: v1
+            kind: Namespace
+    patches:
+    - fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.manifest.metadata.name
+      type: FromCompositeFieldPath
+  - base:
+      name: external-secret
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: external-secrets.io/v1beta1
+            kind: ExternalSecret
+            metadata:
+                namespace: ""
+            spec:
+              secretStoreRef:
+                name: aws-secretsmanager
+                kind: ClusterSecretStore 
+              target:
+                template:
+                  type: servicebinding.io/config
+                  data:    
+                    username: "{{ .username }}"
+                    password: "{{ .password }}"
+                    address: "{{ .address }}"
+              dataFrom:
+              - extract:
+                  conversionStrategy: Default
+        writeConnectionSecretToRef:
+          namespace: crossplane-system        
+        connectionDetails:
+        - apiVersion: v1
+          kind: Secret
+          namespace: ""
+          fieldPath: data.address
+          toConnectionSecretKey: address
+        - apiVersion: v1
+          kind: Secret
+          namespace: ""
+          fieldPath: data.username
+          toConnectionSecretKey: username
+        - apiVersion: v1
+          kind: Secret
+          namespace: ""
+          fieldPath: data.password
+          toConnectionSecretKey: password
+    connectionDetails:
+    - name: type
+      value: rabbitmq
+    - name: provider
+      value: aws
+    - fromConnectionSecretKey: password     
+      name: password
+    - fromConnectionSecretKey: username
+      name: username      
+    - fromConnectionSecretKey: address
+      name: addresses              
+    patches:  
+      - fromFieldPath: metadata.name
+        toFieldPath: spec.forProvider.manifest.metadata.namespace
+        type: FromCompositeFieldPath    
+      - fromFieldPath: metadata.uid
+        toFieldPath: spec.writeConnectionSecretToRef.name
+        transforms:
+        - string:
+            fmt: '%s-rds'
+            type: Format
+          type: string
+        type: FromCompositeFieldPath        
+      - fromFieldPath: metadata.name
+        toFieldPath: spec.forProvider.manifest.metadata.name
+      - fromFieldPath: spec.secretName
+        toFieldPath: spec.forProvider.manifest.spec.dataFrom[0].extract.key
+      - fromFieldPath: metadata.name
+        toFieldPath: spec.connectionDetails[0].name
+        type: FromCompositeFieldPath     
+      - fromFieldPath: metadata.name
+        toFieldPath: spec.connectionDetails[1].name
+        type: FromCompositeFieldPath   
+      - fromFieldPath: metadata.name
+        toFieldPath: spec.connectionDetails[2].name
+        type: FromCompositeFieldPath  
+      - fromFieldPath: metadata.name
+        toFieldPath: spec.connectionDetails[0].namespace
+        type: FromCompositeFieldPath     
+      - fromFieldPath: metadata.name
+        toFieldPath: spec.connectionDetails[1].namespace
+        type: FromCompositeFieldPath   
+      - fromFieldPath: metadata.name
+        toFieldPath: spec.connectionDetails[2].namespace
+        type: FromCompositeFieldPath  
+               

@@ -1,0 +1,11 @@
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterInstanceClass
+metadata:
+  name: cognito-cred
+spec:
+  description:
+    short: AWS Cognitor Credentials
+  provisioner:
+    crossplane:
+      compositeResourceDefinition: xcognitocreds.bindable.auth.example.org 
