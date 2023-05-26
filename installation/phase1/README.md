@@ -333,6 +333,18 @@ namespace and <secretName> with the secret name from the above step.
 ytt -f gateway.yaml -v name=where-for-dinner-gateway -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
 ```
 
+#### AWS Security Group
+
+If you generally selected the default options for the service creation steps, your services should be created in the `default` security group.  You clusters will likely
+be located within their own security group, so it will be necessary to add an inbound rule to the `default` security group to allow traffic to flow from 
+the clusters' security group.  You will need to perform this security group update for both clusters.
+
+You can find your cluster's security group by searching for EKS in the AWS Web Console, select your cluster name, click the compute tab, and then click one of the nodes.
+On the next screen, click on the Instance name and then click the security tab on the next screen.  You should the security group listed in the security details.  
+
+In the region where you deploy the MySQL database, you will also need in add an inbound rule to the default security group to allow traffic on TCP port 3306 from all IP 
+addresses.  This is due to the MySQL database needing to be publicly accessible for this demo.
+
 ### Deploy Workloads
 
 > **Note**
@@ -341,10 +353,11 @@ ytt -f gateway.yaml -v name=where-for-dinner-gateway -v workloadNamespace=<names
 Workload images and configuration are stored in an OCI registry and a GitOps repository.  The `deliverables-test` branch of this repository is one such GitOps repository and 
 can be used to deploy workloads to the clusters.
 
-To deploy the workloads to the clusters, run the following command within the root directory of the `deliverables-test` branch.
+To deploy the workloads to the clusters, run the following command within the root directory of the `deliverables-test` branch replacing <namespace> with your workload
+namespace.
 
 ```
-kubectl apply -f . --recursive
+kubectl apply -f . --recursive -n <namespace>
 ```
 
 ### Create GNS
