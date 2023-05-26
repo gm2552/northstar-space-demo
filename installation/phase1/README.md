@@ -236,7 +236,7 @@ To create a `ClassClaim` for the Redis instance, run the following command from 
 namespace and <secretName> with the secret name from the above step.
     
 ```
-ytt -f rdsCredCaim.yaml -v name=cache-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
+ytt -f elaticacheCredClaim.yaml -v name=cache-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
 ```
 
 #### MySQL 
@@ -330,7 +330,7 @@ To create an instance of the gateway, run the following command from the "servic
 namespace and <secretName> with the secret name from the above step.
     
 ```
-ytt -f cognitoCredClaim.yaml -v name=auth-where-for-dinner -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
+ytt -f gateway.yaml -v name=where-for-dinner-gateway -v workloadNamespace=<namespace> -v secretName=<secretName> | kubectl apply -f-
 ```
 
 ### Deploy Workloads
