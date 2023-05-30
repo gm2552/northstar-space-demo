@@ -353,11 +353,16 @@ addresses.  This is due to the MySQL database needing to be publicly accessible 
 Workload images and configuration are stored in an OCI registry and a GitOps repository.  The `deliverables-test` branch of this repository is one such GitOps repository and 
 can be used to deploy workloads to the clusters.
 
+The workloads that make up the application and managed with as a Carvel `App` which reference artifacts in the GitOps repository.  This allows the application to be 
+updated via GitOps as new versions of workload packages are committed to the GitOps repository.
+
 To deploy the workloads to the clusters, run the following command within the root directory of the `deliverables-test` branch replacing <namespace> with your workload
 namespace.
 
 ```
-kubectl apply -f . --recursive -n <namespace>
+kubectl apply -f appRBAC.yaml -n <namespace>
+
+kubectl apply -f app.yaml -n <namespace>
 ```
 
 ### Deploy Gateway Routes
