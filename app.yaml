@@ -1,0 +1,39 @@
+apiVersion: kappctrl.k14s.io/v1alpha1
+kind: App
+metadata:
+ name: where-for-dinner
+spec:
+  serviceAccountName: default
+  fetch:
+  - git:
+      url: https://github.com/gm2552/northstar-space-demo
+      ref: origin/deliverables-test
+      subPath: availability.workloads.tap/packages
+  - git:
+      url: https://github.com/gm2552/northstar-space-demo
+      ref: origin/deliverables-test
+      subPath: search-proc.workloads.tap/packages
+  - git:
+      url: https://github.com/gm2552/northstar-space-demo
+      ref: origin/deliverables-test
+      subPath: where-for-dinner-crawler.workloads.tap/packages
+  - git:
+      url: https://github.com/gm2552/northstar-space-demo
+      ref: origin/deliverables-test
+      subPath: where-for-dinner-notify.workloads.tap/packages
+  - git:
+      url: https://github.com/gm2552/northstar-space-demo
+      ref: origin/deliverables-test
+      subPath: where-for-dinner-search.workloads.tap/packages
+  - git:
+      url: https://github.com/gm2552/northstar-space-demo
+      ref: origin/deliverables-test
+      subPath: where-for-dinner-ui.workloads.tap/packages
+  - git:
+      url: https://github.com/gm2552/northstar-space-demo
+      ref: origin/deliverables-test
+      subPath: workload-package-installs
+  template:
+  - ytt: {}
+  deploy:
+  - kapp: {}
