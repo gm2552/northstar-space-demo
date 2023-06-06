@@ -373,7 +373,7 @@ To deploy the routes to the gateway provisioned in its section above, run the fo
 <namespace> and <gateway> with your workload namespace and the gateway name provisioned above.
 
 ```
-kubectl apply -f scgRoutes.yaml -v workloadNamespace -v gatewayName=<gateway> | kubectl apply -f-
+c
 ```
 
 
