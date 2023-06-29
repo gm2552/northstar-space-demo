@@ -142,7 +142,7 @@ For example, use the following command when creating a service account for a clu
 the AWS Account ID.
 
 ```
-eksctl create iamserviceaccount --name eso-serviceaccount --namespace where-for-dinner --cluster tap-west-1 --role-name "tap-eso-role-tap-west-1" \
+eksctl create iamserviceaccount --name eso-serviceaccount --namespace external-secrets--cluster tap-west-1 --role-name "tap-eso-role-tap-west-1" \
     --attach-policy-arn arn:aws:iam::<account>:policy/tap-eso-reader-us-west-1 --approve --region us-west-1
  ```
  
