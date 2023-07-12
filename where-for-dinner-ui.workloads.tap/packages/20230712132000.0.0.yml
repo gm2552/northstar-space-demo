@@ -1,0 +1,25 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: where-for-dinner-ui.workloads.tap.20230712132000.0.0
+spec:
+  refName: where-for-dinner-ui.workloads.tap
+  version: 20230712132000.0.0
+  releaseNotes: |
+    Release v20230712132000.0.0 of package where-for-dinner-ui.workloads.tap
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-ui-workloads-bundle@sha256:ff095cb72b48f3f4dd32ea779c65e8c2e039aa3f9355b87bfb0c3ebfed040a08
+      template:
+      - ytt:
+          paths:
+          - .
+      - kbld:
+          paths:
+          - .imgpkg/images.yml
+          - '-'
+      deploy:
+      - kapp: {}
+
