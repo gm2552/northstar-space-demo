@@ -68,7 +68,7 @@ Operator (ESO) into the clusters.  The External Secrets Operator package is incl
 command against each cluster (version number may differ):
 
 ```
-tanzu package install eso --package-name external-secrets.apps.tanzu.vmware.com --version 0.6.1+tap.6 -n tap-install
+tanzu package install eso --package external-secrets.apps.tanzu.vmware.com --version 0.6.1+tap.6 -n tap-install
 ```
 
 A `ClusterSecretStore` to be used with AWS secrets manager will configured later in this document.
@@ -88,7 +88,7 @@ scgOperator:
 To install the SCG package, run the following Tanzu CLI command against each cluster (version number may differ):
 
 ```
-tanzu package install scg --package-name spring-cloud-gateway.tanzu.vmware.com --version 2.0.3 --values-file scg.yaml -n tap-install
+tanzu package install scg --package spring-cloud-gateway.tanzu.vmware.com --version 2.0.3 --values-file scg.yaml -n tap-install
 ```
 
 ### Configure AWS CloudSecretStore
