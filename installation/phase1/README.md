@@ -293,7 +293,7 @@ entries and click "Create user pool."
 
 After the user pool has been created and is available, click you new user pool from the list of user pools and note the User pool ID and the region where you user pool
 exists.  This will part of the be `issueruri` field of the secret.  The `issueruri` will have the format of 
-`https://cognito-idp.<region>.amazonaws.com/<user pool id>.  Next click on the "App Integration tab", scroll down to the "App clients and analytics" section, and click on
+`https://cognito-idp.<region>.amazonaws.com/<user pool id>`.  Next click on the "App Integration tab", scroll down to the "App clients and analytics" section, and click on
 your application name.  Note the Client Id and Client secrets; these will be used in the corresponding fields of the secret.
 
 To create a Cognito secret, search for "Secrets Manager" in the AWS Web Console, select "Store a new secret" and select "Other type of secret".  Provide the following key/value
