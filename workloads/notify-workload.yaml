@@ -25,9 +25,9 @@ spec:
   serviceClaims:
   - name: rmq
     ref:
-      apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-      kind: ClassClaim
-      name: msgbroker-where-for-dinner
+      apiVersion: v1
+      kind: Secret
+      name: where-for-dinner-rabbitmq
   resources:
     requests:
       memory: 500M
