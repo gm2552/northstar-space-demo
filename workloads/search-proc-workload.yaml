@@ -11,7 +11,7 @@ metadata:
 spec:
   env:
   - name: spring_profiles_active
-    value: redis,crawler,rabbitmq
+    value: crawler,rabbitmq
   build:
     env:
     - name: BP_JVM_VERSION
@@ -25,14 +25,9 @@ spec:
   serviceClaims:
   - name: rmq
     ref:
-      apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-      kind: ClassClaim
-      name: msgbroker-where-for-dinner
-  - name: cache
-    ref:
-      apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-      kind: ClassClaim
-      name: cache-where-for-dinner
+      apiVersion: v1
+      kind: Secret
+      name: where-for-dinner-rabbitmq
   resources:
     requests:
       memory: 500M
