@@ -16,7 +16,7 @@ spec:
       value: dist
   env:
   - name: REACT_APP_PROFILE
-    value: secure
+    value: nonsecure
   params:
   - name: ports
     value:
