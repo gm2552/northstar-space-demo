@@ -31,12 +31,12 @@ spec:
   - name: rmq
     ref:
       apiVersion: v1
-      kind: secret
+      kind: Secret
       name: where-for-dinner-rabbitmq
   - name: db
     ref:
       apiVersion: v1
-      kind: secret
+      kind: Secret
       name: where-for-dinner-mysql
   resources:
     requests:
