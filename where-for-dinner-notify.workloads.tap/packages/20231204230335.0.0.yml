@@ -11,7 +11,7 @@ spec:
     spec:
       fetch:
       - imgpkgBundle:
-          image: harbor.ryanbaker.io/tap-apps/workloads/where-for-dinner-notify-default-bundle@sha256:2270010ecccfce24002d6c12f29f3455ccb900029f13dcf684ec4938c8c1b640
+          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-notify-workloads-bundle@sha256:c5b5816b9cb0c8bc139db40c1a2462602805300b68f022aae09204bd4df927d1
       template:
       - ytt:
           paths:

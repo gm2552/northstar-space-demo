@@ -11,7 +11,7 @@ spec:
     spec:
       fetch:
       - imgpkgBundle:
-          image: harbor.ryanbaker.io/tap-apps/workloads/availability-default-bundle@sha256:39604045615354f3dc63ad17451e7583d571b62527b21515190b0ee047675d87
+          image: reg.perfect300rock.com/tapdev/supply-chain/availability-workloads-bundle@sha256:493ef6c718e05833129e15081906ae7ef235be0035ce1de075cadecd55f813e9
       template:
       - ytt:
           paths:

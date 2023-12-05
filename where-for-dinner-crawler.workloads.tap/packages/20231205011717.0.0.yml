@@ -11,7 +11,7 @@ spec:
     spec:
       fetch:
       - imgpkgBundle:
-          image: harbor.ryanbaker.io/tap-apps/workloads/where-for-dinner-crawler-default-bundle@sha256:fed8b73cb6b09e975ec5662e441b7335b8419841663f2e67fa64c737eb1a13d6
+          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-crawler-workloads-bundle@sha256:b8ff74964941d1eb60a9129fbaca85fe22dd92f4a14ed387f4148b2de9156ee3
       template:
       - ytt:
           paths:
