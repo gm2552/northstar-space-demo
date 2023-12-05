@@ -1,4 +1,4 @@
-'apiVersion: data.packaging.carvel.dev/v1alpha1
+apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
   name: where-for-dinner-notify.workloads.tap.20231204232117.0.0+build.6b20b32
