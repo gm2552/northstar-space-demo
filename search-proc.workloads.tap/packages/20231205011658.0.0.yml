@@ -1,12 +1,12 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: search-proc.default.tap.20231205011658.0.0+build.6b20b32
+  name: search-proc.default.tap.20231205011658.0.0
 spec:
   refName: search-proc.default.tap
-  version: 20231205011658.0.0+build.6b20b32
+  version: 20231205011658.0.0
   releaseNotes: |
-    Release v20231205011658.0.0+build.6b20b32 of package search-proc.default.tap
+    Release v20231205011658.0.0 of package search-proc.default.tap
   template:
     spec:
       fetch:

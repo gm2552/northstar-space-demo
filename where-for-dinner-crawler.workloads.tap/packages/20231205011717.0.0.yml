@@ -1,12 +1,12 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: where-for-dinner-crawler.default.tap.20231205011717.0.0+build.6b20b32
+  name: where-for-dinner-crawler.default.tap.20231205011717.0.0
 spec:
   refName: where-for-dinner-crawler.default.tap
-  version: 20231205011717.0.0+build.6b20b32
+  version: 20231205011717.0.0
   releaseNotes: |
-    Release v20231205011717.0.0+build.6b20b32 of package where-for-dinner-crawler.default.tap
+    Release v20231205011717.0.0 of package where-for-dinner-crawler.default.tap
   template:
     spec:
       fetch:

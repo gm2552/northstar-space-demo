@@ -1,12 +1,12 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: availability.default.tap.20231205012245.0.0+build.6b20b32
+  name: availability.default.tap.20231205012245.0.0
 spec:
   refName: availability.default.tap
-  version: 20231205012245.0.0+build.6b20b32
+  version: 20231205012245.0.0
   releaseNotes: |
-    Release v20231205012245.0.0+build.6b20b32 of package availability.default.tap
+    Release v20231205012245.0.0 of package availability.default.tap
   template:
     spec:
       fetch:

@@ -1,12 +1,12 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: where-for-dinner-notify.default.tap.20231204230335.0.0+build.6b20b32
+  name: where-for-dinner-notify.default.tap.20231204230335.0.0
 spec:
   refName: where-for-dinner-notify.default.tap
-  version: 20231204230335.0.0+build.6b20b32
+  version: 20231204230335.0.0
   releaseNotes: |
-    Release v20231204230335.0.0+build.6b20b32 of package where-for-dinner-notify.default.tap
+    Release v20231204230335.0.0 of package where-for-dinner-notify.default.tap
   template:
     spec:
       fetch:
