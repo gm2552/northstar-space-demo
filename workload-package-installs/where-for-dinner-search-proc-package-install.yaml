@@ -6,7 +6,7 @@ metadata:
 spec:
  serviceAccountName: default
  packageRef:
-   refName: search-proc.workloads.tap # name of the Package
+   refName: search-proc.default.tap # name of the Package
    versionSelection:
      constraints: '>=0.0.0'
  values:
