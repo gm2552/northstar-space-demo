@@ -7,31 +7,31 @@ spec:
   fetch:
   - git:
       url: https://github.com/gm2552/northstar-space-demo
-      ref: origin/deliverables-test
+      ref: origin/deliverables-beta1
       subPath: availability.workloads.tap/packages
   - git:
       url: https://github.com/gm2552/northstar-space-demo
-      ref: origin/deliverables-test
+      ref: origin/deliverables-beta1
       subPath: search-proc.workloads.tap/packages
   - git:
       url: https://github.com/gm2552/northstar-space-demo
-      ref: origin/deliverables-test
+      ref: origin/deliverables-beta1
       subPath: where-for-dinner-crawler.workloads.tap/packages
   - git:
       url: https://github.com/gm2552/northstar-space-demo
-      ref: origin/deliverables-test
+      ref: origin/deliverables-beta1
       subPath: where-for-dinner-notify.workloads.tap/packages
   - git:
       url: https://github.com/gm2552/northstar-space-demo
-      ref: origin/deliverables-test
+      ref: origin/deliverables-beta1
       subPath: where-for-dinner-search.workloads.tap/packages
   - git:
       url: https://github.com/gm2552/northstar-space-demo
-      ref: origin/deliverables-test
+      ref: origin/deliverables-beta1
       subPath: where-for-dinner-ui.workloads.tap/packages
   - git:
       url: https://github.com/gm2552/northstar-space-demo
-      ref: origin/deliverables-test
+      ref: origin/deliverables-beta1
       subPath: workload-package-installs
   template:
   - ytt: {}

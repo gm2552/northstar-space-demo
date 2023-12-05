@@ -1,17 +1,17 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: where-for-dinner-notify.workloads.tap.20231204232117.0.0+build.6b20b32
+  name: search-proc.default.tap.20231205011658.0.0+build.6b20b32
 spec:
-  refName: where-for-dinner-notify.workloads.tap
-  version: 20231204232117.0.0+build.6b20b32
+  refName: search-proc.default.tap
+  version: 20231205011658.0.0+build.6b20b32
   releaseNotes: |
-    Release v20231204232117.0.0+build.6b20b32 of package where-for-dinner-notify.workloads.tap
+    Release v20231205011658.0.0+build.6b20b32 of package search-proc.default.tap
   template:
     spec:
       fetch:
       - imgpkgBundle:
-          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-notify-workloads-bundle@sha256:c5b5816b9cb0c8bc139db40c1a2462602805300b68f022aae09204bd4df927d1
+          image: harbor.ryanbaker.io/tap-apps/workloads/search-proc-default-bundle@sha256:f57f1d7133477e6fbc7fb929cc4b1b66aacccf32eff57e45bf03a2e5537b58b0
       template:
       - ytt:
           paths:
@@ -19,7 +19,7 @@ spec:
       - kbld:
           paths:
           - .imgpkg/images.yml
-          - '\''-'\''
+          - '-'
       deploy:
       - kapp: {}
   valuesSchema:

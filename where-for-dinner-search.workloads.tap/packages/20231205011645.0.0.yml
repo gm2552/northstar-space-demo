@@ -1,17 +1,17 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: where-for-dinner-search.workloads.tap.20231204232129.0.0+build.6b20b32
+  name: where-for-dinner-ui.default.tap.20231205011654.0.0+build.6b20b32
 spec:
-  refName: where-for-dinner-search.workloads.tap
-  version: 20231204232129.0.0+build.6b20b32
+  refName: where-for-dinner-ui.default.tap
+  version: 20231205011654.0.0+build.6b20b32
   releaseNotes: |
-    Release v20231204232129.0.0+build.6b20b32 of package where-for-dinner-search.workloads.tap
+    Release v20231205011654.0.0+build.6b20b32 of package where-for-dinner-ui.default.tap
   template:
     spec:
       fetch:
       - imgpkgBundle:
-          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-search-workloads-bundle@sha256:391b4eeb9877828cc40bd99a13901bc0400a254428cecdfaa92974ed07aaff19
+          image: harbor.ryanbaker.io/tap-apps/workloads/where-for-dinner-ui-default-bundle@sha256:2a0ff9ba69b9e43a6f2b5b9983621d62d8a22fccbbabadf7590b14251158d34c
       template:
       - ytt:
           paths:
@@ -19,7 +19,7 @@ spec:
       - kbld:
           paths:
           - .imgpkg/images.yml
-          - '\''-'\''
+          - '-'
       deploy:
       - kapp: {}
   valuesSchema:

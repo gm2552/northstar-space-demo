@@ -1,17 +1,17 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: search-proc.workloads.tap.20231204232137.0.0+build.6b20b32
+  name: availability.default.tap.20231205012245.0.0+build.6b20b32
 spec:
-  refName: search-proc.workloads.tap
-  version: 20231204232137.0.0+build.6b20b32
+  refName: availability.default.tap
+  version: 20231205012245.0.0+build.6b20b32
   releaseNotes: |
-    Release v20231204232137.0.0+build.6b20b32 of package search-proc.workloads.tap
+    Release v20231205012245.0.0+build.6b20b32 of package availability.default.tap
   template:
     spec:
       fetch:
       - imgpkgBundle:
-          image: reg.perfect300rock.com/tapdev/supply-chain/search-proc-workloads-bundle@sha256:ef00d0830c71b21c6d17ba07550f493d238d0a2cbbdb9d598a31ea4b5a8a26c8
+          image: harbor.ryanbaker.io/tap-apps/workloads/availability-default-bundle@sha256:39604045615354f3dc63ad17451e7583d571b62527b21515190b0ee047675d87
       template:
       - ytt:
           paths:
@@ -19,7 +19,7 @@ spec:
       - kbld:
           paths:
           - .imgpkg/images.yml
-          - '\''-'\''
+          - '-'
       deploy:
       - kapp: {}
   valuesSchema:
