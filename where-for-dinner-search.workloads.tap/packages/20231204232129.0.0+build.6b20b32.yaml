@@ -1,3 +1,4 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
   name: where-for-dinner-search.workloads.tap.20231204232129.0.0+build.6b20b32
