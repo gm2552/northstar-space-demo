@@ -4,7 +4,7 @@ kind: PackageInstall
 metadata:
  name: where-for-dinner-ui
 spec:
- serviceAccountName: default
+ serviceAccountName: server-workload-installer  
  packageRef:
    refName: where-for-dinner-ui.default.tap # name of the Package
    versionSelection:
@@ -12,3 +12,14 @@ spec:
  values:
  - secretRef:
      name: where-for-dinner-ui-package-values # Secret created in previous step
+---
+apiVersion: v1
+kind: Secret
+metadata:
+ name: where-for-dinner-ui-package-values
+stringData:
+ values.yaml: |
+   ---
+   replicas: 1
+   hostname: ""
+   workload_name: where-for-dinner-ui
