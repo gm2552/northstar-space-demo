@@ -1,9 +1,9 @@
-# northstar-space-demo (i.e. One Tanz/TAP 2.0) Beta 1
+# northstar-space-demo (i.e. One Tanzu) Beta 1
 
 ## Deliverables-Beta1
 
 This branch contains pre-built deliverable packages of the Where For DInner application that can be installed in a run `Space` 
-for the Beta1 release of One Tanzu/TAP 2.0.  It consumes AWS RDS and MQ services using direct secret references in its 
+for the Beta1 release of One Tanzu.  It consumes AWS RDS and MQ services using direct secret references in its 
 service bindings; you will need deploy an RDS and Amazon MQ (RabbitMQ option) instance which is publicly available for the
 application workloads to properly run.  It is also assumed that you have access to TAP 2.0 that has been configured with the
 proper traits.
