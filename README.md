@@ -21,6 +21,33 @@ cd northstar-space-demo
 git checkout deliverables-beta1
 ```
 
+#### Create Services
+
+The application configuration of Where For Dinner for the Beta 1 utilizes MySQL and RabbitMQ and consumer credentials/connection information via a 
+direct secret reference.  An easy option to create these services is to use an offering from a cloud provider like AWS.  The following sections walk you
+through creating an Amazon RDS database and a RabbitMQ cluster that can be consumed by the Where For Dinner application.  The subsequent 
+`Update Service Credential Secrets` section will articulate how you will populate the service credentials/connection information into a Kubernetes secret.
+
+##### Create MySQL RDS Instance
+
+To create a MySQL instance, search for RDS in the AWS Web Console, click the "Create database" button, select "Standard create", and select "Aurora (MySQL Compabile)."  
+Select "Dev/Test" as the template, give the cluster a name of your choice, and supply a master username and password in "Credential Settings" (you will need the user/password)
+in the appropriate secret fields).  For "Instance configuration", select a smaller size in the "Burstable classes" class; db.t4g.large is appropriate.  Under "Connectivity", 
+chose "Yes" for "Public access."  You can turn off performance insights if you wish.  Under "Additional configuration", provide an "Initial database name" such as 
+"dinner"; you can disable backups as well if you wish.  Finally, click "Create database.
+
+After the database has been created and is available, click on the writer instance of your database from the list of databases clusters and scroll down to the 
+"Connectivity & security" section.  Note the endpoint and port as these will be used as the host and port fields in the secret.
+
+##### Create RabbitMQ Cluster
+
+To create a RabbitMQ instance, search for AmazonMQ in the AWS Web Console.  Click "Create brokers" and select RabbitMQ as the broker engine.  You can choose settings of your
+preference through the rest of the wizard, but you will need to provide a username/password which you will need to remember when creating the secret.   You should also select
+"Private access" for "Access type".  After providing all settings, click "Next" then "Create broker"; it may take up to 20 minutes for the broker to be provisioned.
+
+After the broker has been created, click the broker name from the list of brokers and scroll down to the "Connections" sections.  Note the AMQP endpoint as this will be 
+used in the secret.
+
 #### Update Service Credential Secrets
 
 Using your editor of choice, update the fields with <> placeholders in the serviceSecret.yaml file in the root of this repository with the credentials 
