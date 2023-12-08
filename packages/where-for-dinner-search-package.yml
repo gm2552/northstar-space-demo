@@ -21,7 +21,8 @@ spec:
           - .imgpkg/images.yml
           - '-'
       deploy:
-      - kapp: {}
+      - kapp:
+          rawOptions: ["--wait=false"]
   valuesSchema:
     openAPIv3:
       type: object
