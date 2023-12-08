@@ -23,7 +23,7 @@ git checkout deliverables-beta1
 
 #### Create Services
 
-The application configuration of Where For Dinner for the Beta 1 utilizes MySQL and RabbitMQ and consumer credentials/connection information via a 
+The application configuration of Where For Dinner for the Beta 1 utilizes MySQL and RabbitMQ and consumes credentials/connection information via a 
 direct secret reference.  An easy option to create these services is to use an offering from a cloud provider like AWS.  The following sections walk you
 through creating an Amazon RDS database and a RabbitMQ cluster that can be consumed by the Where For Dinner application.  The subsequent 
 `Update Service Credential Secrets` section will articulate how you will populate the service credentials/connection information into a Kubernetes secret.
