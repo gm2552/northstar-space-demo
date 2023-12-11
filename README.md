@@ -48,6 +48,14 @@ preference through the rest of the wizard, but you will need to provide a userna
 After the broker has been created, click the broker name from the list of brokers and scroll down to the "Connections" sections.  Note the AMQP endpoint as this will be 
 used in the secret.
 
+#####nUpdate External Hostname
+
+Where For Dinner uses an `HTTPRoute` resource to create an externally resolvable and accessible endpoint on the internet.  The hostname portion of the externally addressable address is controlled by the `spec.parentRefs.sectionName` of the `HTTPRoute` resource.  The `sectionName` field's value is prefixed with http- and then followed by the desired hostname.  For example, a value of *http-where-for-dinner* would result in a hostname of *where-for-dinner*.
+
+Using your editor of choice, update the field with the <hostname> placeholder in the k8sgatewayReoutes.yaml file in the /routes directory of this repository with the your desired hostname.  
+
+**NOTE/IMPORTANT:** the host name for each deployed instance of Where For Dinner should be unique if you are deploying multiple instances of where for dinner that utilize the same domain name (the domain name is controlled by the public-ingress trait). 
+
 #### Update Service Credential Secrets
 
 Using your editor of choice, update the fields with <> placeholders in the serviceSecret.yaml file in the root of this repository with the credentials 
