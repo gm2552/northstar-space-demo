@@ -48,7 +48,7 @@ preference through the rest of the wizard, but you will need to provide a userna
 After the broker has been created, click the broker name from the list of brokers and scroll down to the "Connections" sections.  Note the AMQP endpoint as this will be 
 used in the secret.
 
-#####nUpdate External Hostname
+##### Update External Hostname
 
 Where For Dinner uses an `HTTPRoute` resource to create an externally resolvable and accessible endpoint on the internet.  The hostname portion of the externally addressable address is controlled by the `spec.parentRefs.sectionName` of the `HTTPRoute` resource.  The `sectionName` field's value is prefixed with http- and then followed by the desired hostname.  For example, a value of *http-where-for-dinner* would result in a hostname of *where-for-dinner*.
 
