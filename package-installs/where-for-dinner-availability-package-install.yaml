@@ -33,7 +33,6 @@ metadata:
  name: rmq-service-overlay 
 stringData:
  rmqOverlay.yaml: |
-   ---
      #@ load("@ytt:overlay", "overlay")
 
      #@overlay/match by=overlay.subset({"kind": "ServiceBinding"}), expects="1+"
@@ -43,6 +42,7 @@ stringData:
        service:
          apiVersion: services.apps.tanzu.vmware.com/v1alpha1
          kind: ClassClaim
+         name: mq-wfd
 ---
 apiVersion: v1
 kind: Secret
@@ -50,7 +50,6 @@ metadata:
  name: mysql-service-overlay 
 stringData:
  mysqlOverlay.yaml: |
-   ---
      #@ load("@ytt:overlay", "overlay")
 
      #@overlay/match by=overlay.subset({"kind": "ServiceBinding"}), expects="1+"
@@ -60,3 +59,4 @@ stringData:
        service:
          apiVersion: services.apps.tanzu.vmware.com/v1alpha1
          kind: ClassClaim         
+         name: mysql-wfd
