@@ -3,6 +3,8 @@ apiVersion: packaging.carvel.dev/v1alpha1
 kind: PackageInstall
 metadata:
  name: where-for-dinner-search-proc
+ annotations:
+    ext.packaging.carvel.dev/ytt-paths-from-secret-name.0: rmq-service-overlay  
 spec:
  serviceAccountName: server-workload-installer  
  packageRef:
@@ -23,3 +25,20 @@ stringData:
    replicas: 1
    hostname: ""
    workload_name: where-for-dinner-search-proc
+---
+apiVersion: v1
+kind: Secret
+metadata:
+ name: rmq-service-overlay 
+stringData:
+ rmqOverlay.yaml: |
+     #@ load("@ytt:overlay", "overlay")
+
+     #@overlay/match by=overlay.subset({"kind": "ServiceBinding"}), expects="1+"
+     #@overlay/match by=overlay.subset({"spec": {"service": {"name": "where-for-dinner-rabbitmq"}}}), expects=1
+     --- 
+     spec:
+       service:
+         apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+         kind: ClassClaim
+         name: mq-wfd
