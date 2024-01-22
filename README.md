@@ -1,36 +1,13 @@
-# northstar-space-demo
-Configuration repository for NorthStar Space Apps demo.  This repository contains configuration in various folders and branches
-that include initial bootstrapping configuration as well as GitOps based configurations.
+# No Service Bindings
+The branch contains configuration to build WFD workloads without service bindings.  Instead it uses
+ENV variables references secrets to set well know Spring configuration parameters for MySQ and 
+RabbitMQ.
 
-## Demo Installation
+## Build Workloads
+Workload build configuration is containeed in the `workloads` directory.  Simply change to the
+`workloads` directory and run the following commnand substituting the appropriate namespace 
+to submit builds to a supply chain.
 
-This demo is split into phases with each subsequent phase increasing the level of automation:
-
-[Phase 1](installation/phase1/README.md)
-
-
-## Repository Content
-
-This repository consists of multiple branches where each branch serves a specific configuration role.
-
-* main - Consists of the application workload.yaml files as well as service configuration that may be incorporated later on into `space` templates.
-* deliverables-test - Consists of carvel `package` and `packageinstall` resources to install the workloads into run clusters or a `space`
-
-
-### Main Branch
-
-The `main` branch consists of the following folders and content  
-
-[Workloads](workloads/README.md) 
-
-The `workload` files for each discrete service.  These workloads are intended to be submitted to a build cluster which results in carvel `packages`
-that uploaded to an image repository and `package` configuration that is commited to a GitOps repository.
-
-[Services](services/README.md) 
-
-Configuration related to creating service instances needed by the application.  Configuration includes CrossPlane resources such as XRDs, Compositions,
-Providers, as well as TAP Services Toolkit resources such as `ClusterInstanceClass` and `ClassClaim`.  
-
-[Secrets](secrets/README.md) 
-
-Configuration for creating `ClusterSecretStores` for external secrets.   
+```
+kubectl apply -f . -n <namepsace> 
+```
