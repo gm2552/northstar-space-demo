@@ -38,12 +38,12 @@ spec:
   - name: spring_r2dbc_username
     valueFrom:
       secretKeyRef:
-        name: where-for-dinner-rabbitmq
+        name: where-for-dinner-mysql
         key: username   
   - name: spring_r2dbc_password
     valueFrom:
       secretKeyRef:
-        name: where-for-dinner-rabbitmq
+        name: where-for-dinner-mysql
         key: password      
   params:
   - name: ports
