@@ -1,17 +1,17 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: where-for-dinner-ui.default.tap.20231205011654.0.0
+  name: where-for-dinner-ui.default.tap.20240122011654.0.0
 spec:
   refName: where-for-dinner-ui.default.tap
-  version: 20231205011654.0.0
+  version: 20240122011654.0.0
   releaseNotes: |
-    Release v20231205011654.0.0 of package where-for-dinner-ui.default.tap
+    Release v20240122011654.0.0 of package where-for-dinner-ui.default.tap
   template:
     spec:
       fetch:
       - imgpkgBundle:
-          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-ui-workloads-bundle@sha256:15b0b9e29ba898e12fff98a853b4fc14f13cbc08cdbdb63e42a8141b9104bbb3
+          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-ui-workloads-bundle@sha256:abd08e394cc9cba7a999d254886641c9b9e721e6f0e59a93098804881e515f2b
       template:
       - ytt:
           paths:

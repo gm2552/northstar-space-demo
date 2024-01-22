@@ -1,12 +1,10 @@
-# northstar-space-demo (i.e. One Tanzu) Beta 1
+# No service binding deliverables
 
 ## Deliverables-Beta1
 
 This branch contains pre-built deliverable packages of the Where For DInner application that can be installed in a run `Space` 
-for the Beta1 release of One Tanzu.  It consumes AWS RDS and MQ services using direct secret references in its 
-service bindings; you will need deploy an RDS and Amazon MQ (RabbitMQ option) instance which is publicly available for the
-application workloads to properly run.  It is also assumed that you have access to TAP 2.0 that has been configured with the
-proper traits.
+for the Beta1 release of One Tanzu.  The difference between this deployment and the Beta 1 branch is that the workloads do not
+use service bindings.  Instead they use ENV variables that reference secrets store in the `serviceSecret.yaml` file.
 
 ### Install Step
 
@@ -18,7 +16,7 @@ Run the following commands:
 ```
 git clone https://github.com/gm2552/northstar-space-demo
 cd northstar-space-demo
-git checkout deliverables-beta1
+git checkout deliverables-no-service-bindings
 ```
 
 #### Create Services

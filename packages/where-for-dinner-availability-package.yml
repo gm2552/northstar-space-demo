@@ -1,17 +1,17 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: availability.default.tap.20231205012245.0.0
+  name: availability.default.tap.20240122012245.0.0
 spec:
   refName: availability.default.tap
-  version: 20231205012245.0.0
+  version: 20240122012245.0.0
   releaseNotes: |
-    Release v20231205012245.0.0 of package availability.default.tap
+    Release v20240122012245.0.0 of package availability.default.tap
   template:
     spec:
       fetch:
       - imgpkgBundle:
-          image: reg.perfect300rock.com/tapdev/supply-chain/availability-workloads-bundle@sha256:493ef6c718e05833129e15081906ae7ef235be0035ce1de075cadecd55f813e9
+          image: reg.perfect300rock.com/tapdev/supply-chain/availability-workloads-bundle@sha256:fe34d51f0dc883adf784ebd905f61629c3035f334e7766393c7fa8f97eb1494f
       template:
       - ytt:
           paths:

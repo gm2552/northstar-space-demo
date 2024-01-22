@@ -1,17 +1,17 @@
 apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
-  name: where-for-dinner-notify.default.tap.20231204230335.0.0
+  name: where-for-dinner-notify.default.tap.20240122230335.0.0
 spec:
   refName: where-for-dinner-notify.default.tap
-  version: 20231204230335.0.0
+  version: 20240122230335.0.0
   releaseNotes: |
-    Release v20231204230335.0.0 of package where-for-dinner-notify.default.tap
+    Release v20240122230335.0.0 of package where-for-dinner-notify.default.tap
   template:
     spec:
       fetch:
       - imgpkgBundle:
-          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-notify-workloads-bundle@sha256:c5b5816b9cb0c8bc139db40c1a2462602805300b68f022aae09204bd4df927d1
+          image: reg.perfect300rock.com/tapdev/supply-chain/where-for-dinner-notify-workloads-bundle@sha256:1de7fe3f26039d44f5b83fa90f8add45fbc56820c8f0d87439212f2ce77275bc
       template:
       - ytt:
           paths:
