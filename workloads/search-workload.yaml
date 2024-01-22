@@ -12,7 +12,39 @@ metadata:
 spec:
   env:
   - name: spring_profiles_active
-    value: mysql,rabbitmq,secure
+    value: mysql,rabbitmq
+# Rabbit MQ settings
+  - name: spring_rabbitmq_addresses
+    valueFrom:
+      secretKeyRef:
+        name: where-for-dinner-rabbitmq
+        key: addresses
+  - name: spring_rabbitmq_username
+    valueFrom:
+      secretKeyRef:
+        name: where-for-dinner-rabbitmq
+        key: username   
+  - name: spring_rabbitmq_password
+    valueFrom:
+      secretKeyRef:
+        name: where-for-dinner-rabbitmq
+        key: password   
+# MySQL settings        
+  - name: spring_r2dbc_url
+    valueFrom:
+      secretKeyRef:
+        name: where-for-dinner-mysql
+        key: url 
+  - name: spring_r2dbc_username
+    valueFrom:
+      secretKeyRef:
+        name: where-for-dinner-rabbitmq
+        key: username   
+  - name: spring_r2dbc_password
+    valueFrom:
+      secretKeyRef:
+        name: where-for-dinner-rabbitmq
+        key: password      
   params:
   - name: ports
     value:
@@ -27,22 +59,6 @@ spec:
       system: where-for-dinner
       owner: where-for-dinner-team
       description: Core Where for Dinner service for submitting searches and parameters
-  serviceClaims:
-  - name: sso
-    ref:
-      apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-      kind: ClassClaim
-      name: auth-where-for-dinner
-  - name: rmq
-    ref:
-      apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-      kind: ClassClaim
-      name: msgbroker-where-for-dinner
-  - name: db
-    ref:
-      apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-      kind: ClassClaim
-      name: db-where-for-dinner
   resources:
     requests:
       memory: 500M

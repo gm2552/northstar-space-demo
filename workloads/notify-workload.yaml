@@ -12,6 +12,22 @@ spec:
   env:
   - name: spring_profiles_active
     value: rabbitmq
+# Rabbit MQ settings
+  - name: spring_rabbitmq_addresses
+    valueFrom:
+      secretKeyRef:
+        name: where-for-dinner-rabbitmq
+        key: addresses
+  - name: spring_rabbitmq_username
+    valueFrom:
+      secretKeyRef:
+        name: where-for-dinner-rabbitmq
+        key: username   
+  - name: spring_rabbitmq_password
+    valueFrom:
+      secretKeyRef:
+        name: where-for-dinner-rabbitmq
+        key: password      
   build:
     env:
     - name: BP_JVM_VERSION
@@ -22,12 +38,6 @@ spec:
     - port: 80
       containerPort: 8080
       name: http
-  serviceClaims:
-  - name: rmq
-    ref:
-      apiVersion: services.apps.tanzu.vmware.com/v1alpha1
-      kind: ClassClaim
-      name: msgbroker-where-for-dinner
   resources:
     requests:
       memory: 500M
