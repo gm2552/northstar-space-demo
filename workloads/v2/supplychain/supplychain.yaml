@@ -1,0 +1,2654 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: source-git-clone
+spec:
+  description: |-
+    These Tasks are Git tasks to work with repositories used by other tasks in your Pipeline.
+    The git-clone Task will clone a repo from the provided url into the output Workspace. By default the repo will be cloned into the root of your Workspace. You can clone into a subdirectory by setting this Task's subdirectory param. This Task also supports sparse checkouts. To perform a sparse checkout, pass a list of comma separated directory patterns to this Task's sparseCheckoutDirectories param.
+  params:
+  - description: Repository URL to clone from.
+    name: url
+    type: string
+  - default: ""
+    description: Revision to checkout. (branch, tag, sha, ref, etc...)
+    name: revision
+    type: string
+  - default: ""
+    description: Refspec to fetch before checking out revision.
+    name: refspec
+    type: string
+  - default: "true"
+    description: Initialize and fetch git submodules.
+    name: submodules
+    type: string
+  - default: "1"
+    description: Perform a shallow clone, fetching only the most recent N commits.
+    name: depth
+    type: string
+  - default: "true"
+    description: Set the `http.sslVerify` global git config. Setting this to `false`
+      is not advised unless you are sure that you trust your git remote.
+    name: ssl-verify
+    type: string
+  - default: ca-bundle.crt
+    description: file name of mounted crt using ssl-ca-directory workspace. default
+      value is ca-bundle.crt.
+    name: crt-file-name
+    type: string
+  - default: ""
+    description: Subdirectory inside the `output` Workspace to clone the repo into.
+    name: subdirectory
+    type: string
+  - default: ""
+    description: Define the directory patterns to match or exclude when performing
+      a sparse checkout.
+    name: sparse-checkout-directories
+    type: string
+  - default: "true"
+    description: Clean out the contents of the destination directory if it already
+      exists before cloning.
+    name: delete-existing
+    type: string
+  - default: ""
+    description: HTTP proxy server for non-SSL requests.
+    name: http-proxy
+    type: string
+  - default: ""
+    description: HTTPS proxy server for SSL requests.
+    name: https-proxy
+    type: string
+  - default: ""
+    description: Opt out of proxying HTTP/HTTPS requests.
+    name: no-proxy
+    type: string
+  - default: "true"
+    description: Log the commands that are executed during `git-clone`'s operation.
+    name: verbose
+    type: string
+  - default: /home/cnb
+    description: |
+      Absolute path to the user's home directory.
+    name: user-home
+    type: string
+  results:
+  - description: The precise commit SHA that was fetched by this Task.
+    name: commit
+    type: string
+  - description: The precise URL that was fetched by this Task.
+    name: url
+    type: string
+  - description: The epoch timestamp of the commit that was fetched by this Task.
+    name: committer-date
+    type: string
+  stepTemplate:
+    computeResources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+  steps:
+  - computeResources: {}
+    env:
+    - name: HOME
+      value: $(params.user-home)
+    - name: PARAM_URL
+      value: $(params.url)
+    - name: PARAM_REVISION
+      value: $(params.revision)
+    - name: PARAM_REFSPEC
+      value: $(params.refspec)
+    - name: PARAM_SUBMODULES
+      value: $(params.submodules)
+    - name: PARAM_DEPTH
+      value: $(params.depth)
+    - name: PARAM_SSL_VERIFY
+      value: $(params.ssl-verify)
+    - name: PARAM_CRT_FILENAME
+      value: $(params.crt-file-name)
+    - name: PARAM_SUBDIRECTORY
+      value: $(params.subdirectory)
+    - name: PARAM_DELETE_EXISTING
+      value: $(params.delete-existing)
+    - name: PARAM_HTTP_PROXY
+      value: $(params.http-proxy)
+    - name: PARAM_HTTPS_PROXY
+      value: $(params.https-proxy)
+    - name: PARAM_NO_PROXY
+      value: $(params.no-proxy)
+    - name: PARAM_VERBOSE
+      value: $(params.verbose)
+    - name: PARAM_SPARSE_CHECKOUT_DIRECTORIES
+      value: $(params.sparse-checkout-directories)
+    - name: PARAM_USER_HOME
+      value: $(params.user-home)
+    - name: WORKSPACE_OUTPUT_PATH
+      value: $(workspaces.output.path)
+    - name: WORKSPACE_SSH_DIRECTORY_BOUND
+      value: $(workspaces.ssh-directory.bound)
+    - name: WORKSPACE_SSH_DIRECTORY_PATH
+      value: $(workspaces.ssh-directory.path)
+    - name: WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND
+      value: $(workspaces.basic-auth.bound)
+    - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
+      value: $(workspaces.basic-auth.path)
+    - name: WORKSPACE_SSL_CA_DIRECTORY_BOUND
+      value: $(workspaces.ssl-ca-directory.bound)
+    - name: WORKSPACE_SSL_CA_DIRECTORY_PATH
+      value: $(workspaces.ssl-ca-directory.path)
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:0a00f4248dc1897f6f8d04c15f7f8b795c541af82adf9accf9f5189f5f755dc5
+    name: clone
+    script: |
+      #!/usr/bin/env sh
+      set -eu
+
+      if [ "${PARAM_VERBOSE}" = "true" ] ; then
+        set -x
+      fi
+
+      if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
+        cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
+        cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
+        chmod 400 "${PARAM_USER_HOME}/.git-credentials"
+        chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+      fi
+
+      if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
+        cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${PARAM_USER_HOME}"/.ssh
+        chmod 700 "${PARAM_USER_HOME}"/.ssh
+        chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
+      fi
+
+      if [ "${WORKSPACE_SSL_CA_DIRECTORY_BOUND}" = "true" ] ; then
+         export GIT_SSL_CAPATH="${WORKSPACE_SSL_CA_DIRECTORY_PATH}"
+         if [ "${PARAM_CRT_FILENAME}" != "" ] ; then
+            export GIT_SSL_CAINFO="${WORKSPACE_SSL_CA_DIRECTORY_PATH}/${PARAM_CRT_FILENAME}"
+         fi
+      fi
+      CHECKOUT_DIR="${WORKSPACE_OUTPUT_PATH}/${PARAM_SUBDIRECTORY}"
+
+      cleandir() {
+        # Delete any existing contents of the repo directory if it exists.
+        #
+        # We don't just "rm -rf ${CHECKOUT_DIR}" because ${CHECKOUT_DIR} might be "/"
+        # or the root of a mounted volume.
+        if [ -d "${CHECKOUT_DIR}" ] ; then
+          # Delete non-hidden files and directories
+          rm -rf "${CHECKOUT_DIR:?}"/*
+          # Delete files and directories starting with . but excluding ..
+          rm -rf "${CHECKOUT_DIR}"/.[!.]*
+          # Delete files and directories starting with .. plus any other character
+          rm -rf "${CHECKOUT_DIR}"/..?*
+        fi
+      }
+
+      if [ "${PARAM_DELETE_EXISTING}" = "true" ] ; then
+        cleandir || true
+      fi
+
+      test -z "${PARAM_HTTP_PROXY}" || export HTTP_PROXY="${PARAM_HTTP_PROXY}"
+      test -z "${PARAM_HTTPS_PROXY}" || export HTTPS_PROXY="${PARAM_HTTPS_PROXY}"
+      test -z "${PARAM_NO_PROXY}" || export NO_PROXY="${PARAM_NO_PROXY}"
+
+      git config --global --add safe.directory "${WORKSPACE_OUTPUT_PATH}"
+      git-source \
+        -url="${PARAM_URL}" \
+        -revision="${PARAM_REVISION}" \
+        -refspec="${PARAM_REFSPEC}" \
+        -path="${CHECKOUT_DIR}" \
+        -sslVerify="${PARAM_SSL_VERIFY}" \
+        -submodules="${PARAM_SUBMODULES}" \
+        -depth="${PARAM_DEPTH}" \
+        -sparseCheckoutDirectories="${PARAM_SPARSE_CHECKOUT_DIRECTORIES}"
+      cd "${CHECKOUT_DIR}"
+      RESULT_SHA="$(git rev-parse HEAD)"
+      EXIT_CODE="$?"
+      if [ "${EXIT_CODE}" != 0 ] ; then
+        exit "${EXIT_CODE}"
+      fi
+      RESULT_COMMITTER_DATE="$(git log -1 --pretty=%ct)"
+      printf "%s" "${RESULT_COMMITTER_DATE}" > "$(results.committer-date.path)"
+      printf "%s" "${RESULT_SHA}" > "$(results.commit.path)"
+      printf "%s" "${PARAM_URL}" > "$(results.url.path)"
+  workspaces:
+  - description: The git repo will be cloned onto the volume backing this Workspace.
+    name: output
+  - description: |
+      A .ssh directory with private key, known_hosts, config, etc. Copied to
+      the user's home before git commands are executed. Used to authenticate
+      with the git remote when performing the clone. Binding a Secret to this
+      Workspace is strongly recommended over other volume types.
+    name: ssh-directory
+    optional: true
+  - description: |
+      A Workspace containing a .gitconfig and .git-credentials file. These
+      will be copied to the user's home before any git commands are run. Any
+      other files in this Workspace are ignored. It is strongly recommended
+      to use ssh-directory over basic-auth whenever possible and to bind a
+      Secret to this Workspace over other volume types.
+    name: basic-auth
+    optional: true
+  - description: |
+      A workspace containing CA certificates, this will be used by Git to
+      verify the peer with when fetching or pushing over HTTPS.
+    name: ssl-ca-directory
+    optional: true
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: store-content-oci
+spec:
+  params:
+  - name: workload-name
+    type: string
+  results:
+  - name: digest
+    type: string
+  - name: url
+    type: string
+  - name: message
+    type: string
+  stepTemplate:
+    computeResources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsGroup: 1001
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+  steps:
+  - computeResources: {}
+    env:
+    - name: OCI_SERVER
+      valueFrom:
+        secretKeyRef:
+          key: server
+          name: oci-store
+    - name: OCI_REPOSITORY
+      valueFrom:
+        secretKeyRef:
+          key: repository
+          name: oci-store
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:43e9d6e9b82e7e3e7103584448af4ad12fde0b748612a650480ce21d04579ce0
+    name: store
+    script: |-
+      #!/bin/bash
+
+      set -euo pipefail
+
+      # FIXME this line is horrible, but I don't (yet) want to write my own binary to do this
+      IMAGE_NAME=$(imgpkg push -i ${OCI_SERVER}/${OCI_REPOSITORY}/$(params.workload-name)-store -f $(workspaces.input.path) --tty | grep Pushed | sed "s/Pushed//" | sed "s/'//g" | sed 's/ //g')
+      if [ $? -ne 0 ]; then
+        printf "upload failed" | tee $(results.message.path)
+        exit 1
+      fi
+
+      printf "${IMAGE_NAME#*sha256:}" > $(results.digest.path)
+      printf "${IMAGE_NAME}" > $(results.url.path)
+  workspaces:
+  - description: The content to be tar'ed and sent
+    name: input
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: source-git-check
+spec:
+  params:
+  - default: ""
+    description: A git branch ref to watch for new source
+    name: git-branch
+    type: string
+  - default: ""
+    description: A git tag ref to watch for new source
+    name: git-tag
+    type: string
+  - default: ""
+    description: A git commit sha to use
+    name: git-commit
+    type: string
+  - description: The url to the git source repository. +Required
+    name: git-url
+    type: string
+  results:
+  - description: The url to the git source repository.
+    name: url
+    type: string
+  - description: The sha to clone as configured by commit/branch/tag
+    name: sha
+    type: string
+  - description: The sha to clone as configured by commit/branch/tag
+    name: checksum
+    type: string
+  - description: Important result description, especially for error messages
+    name: message
+    type: string
+  stepTemplate:
+    computeResources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+  steps:
+  - computeResources: {}
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:0a00f4248dc1897f6f8d04c15f7f8b795c541af82adf9accf9f5189f5f755dc5
+    name: get-latest-commit
+    script: |
+      if [ "$(params.git-url)" == "" ]; then
+        printf "No git-url provided. git-url must exist" | tee $(results.message.path)
+        exit 1
+      fi
+
+      printf "$(params.git-url)" | tee $(results.url.path)
+
+      if [ "$(params.git-branch)" != "" ]; then
+        git ls-remote --heads $(params.git-url) $(params.git-branch) | awk '{print $1}' | tr -d '\n' | tee $(results.sha.path)
+        printf "using git-branch: $(params.git-branch)" | tee $(results.message.path)
+      elif [ "$(params.git-tag)" != "" ]; then
+        git ls-remote --tags $(params.git-url) refs/tags/$(params.git-tag) | awk '{print $1}' | tr -d '\n' | tee $(results.sha.path)
+        printf "using git-tag: $(params.git-tag)" | tee $(results.message.path)
+      elif [ "$(params.git-commit)" != "" ]; then
+        printf "$(params.git-commit)" | tee $(results.sha.path)
+        printf "using git-commit: $(params.git-commit)" | tee $(results.message.path)
+      else
+        printf "Cannot look for source, you must provide one of git-branch, git-tag, git-commit or git-url." | tee $(results.message.path)
+        exit 1
+      fi
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: prepare-build
+spec:
+  params:
+  - description: url of source registry image
+    name: source-url
+    type: string
+  - description: image to push built application to
+    name: image
+    type: string
+  - description: builder image to run build on
+    name: builder-image
+    type: string
+  - description: base image for built application
+    name: run-image
+    type: string
+  - description: sub directory in source to become root dir for build
+    name: sub-path
+    type: string
+  - description: git revision of source (used for generating correct build metadata)
+    name: revision
+    type: string
+  - description: workload resource
+    name: workload
+    type: string
+  - description: name of service account to use for build
+    name: service-account-name
+    type: string
+  results:
+  - description: spec for build resource
+    name: build-spec
+    type: string
+  stepTemplate:
+    computeResources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+  steps:
+  - computeResources: {}
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:ebab5ce96f20d54dce62d5b8242d740b9e21702d71d11304482315a558a6a387
+    name: prepare-resource
+    script: "#!/usr/bin/env bash\n\nset -euo pipefail\ncd `mktemp -d`\n\necho '$(params.workload)'
+      | yq -o json '{\"env\": .spec.build.env}' > env.json\necho '{\"subPath\":\"$(params.sub-path)\"}'
+      > subpath.json\necho '{\"serviceAccountName\":\"$(params.service-account-name)\"}'
+      > sa.json\necho '{\"env\":[{\"name\":\"BP_OCI_SOURCE\", \"value\":\"$(params.revision)\"}]}'
+      > revision.json\n\necho \"[DEBUG] env.json\"\ncat env.json\n\necho \"[DEBUG]
+      subpath.json\"\ncat subpath.json\n\necho \"[DEBUG] sa.json\"\ncat sa.json\n\necho
+      \"[DEBUG] revision.json\"\ncat revision.json\n\n# merge all files together and
+      covert to yaml\nyq eval-all '. as $item ireduce ({}; . *+ $item )' env.json
+      revision.json subpath.json sa.json | yq -P -o yaml > temp.yaml\n\n# add the
+      ytt header to the values\necho -e \"#@data/values\\n---\\n$(cat temp.yaml)\"
+      > values.yaml\n\n# remove any temp files\nrm -f *.json temp.yaml\n\necho \"[DEBUG]
+      values.yaml\"\ncat values.yaml\n\ncat << EOF > template.yaml\n#@ load(\"@ytt:data\",
+      \"data\")\n---\nbuilder:\n  image: $(params.builder-image)\nenv: #@ data.values.env\nresources:
+      {} \nrunImage:\n  image: $(params.run-image)\nserviceAccountName: #@ data.values.serviceAccountName
+      or \"default\"\nsource:\n  registry:\n    image: $(params.source-url)\n  subPath:
+      #@ data.values.subPath\ntags:\n  - $(params.image):latest\nEOF\n\necho \"[DEBUG]
+      template.yaml\"\ncat template.yaml\n\nytt -f template.yaml -f values.yaml >
+      build-spec.yaml\necho \"[DEBUG] build-spec.yaml\"\ncat build-spec.yaml\n\nrm
+      template.yaml values.yaml\n\ncat build-spec.yaml | yq -oj | jq -c > $(results.build-spec.path)"
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: calculate-digest
+spec:
+  params:
+  - description: The url of the image to calculate the digest from
+    name: image
+    type: string
+  results:
+  - description: The calculated digest
+    name: digest
+    type: string
+  stepTemplate:
+    computeResources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+  steps:
+  - computeResources: {}
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:ebab5ce96f20d54dce62d5b8242d740b9e21702d71d11304482315a558a6a387
+    name: calculate
+    script: |-
+      #!/usr/bin/env bash
+      set -ex
+
+      IMAGE_NAME=$(params.image)
+      printf "${IMAGE_NAME#*sha256:}" > $(results.digest.path)
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: check-builders
+spec:
+  params:
+  - default: default
+    description: The name of the (Cluster)Builder to use
+    name: builder-name
+    type: string
+  - default: clusterbuilder
+    description: The kind of the builder to use (builder or clusterbuilder)
+    name: builder-kind
+    type: string
+  results:
+  - description: The name of the latest builder image to use
+    name: builder-image
+    type: string
+  - description: The name of the latest run image to use
+    name: run-image
+    type: string
+  - description: Any output messages to record
+    name: message
+    type: string
+  stepTemplate:
+    computeResources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+  steps:
+  - computeResources: {}
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:ebab5ce96f20d54dce62d5b8242d740b9e21702d71d11304482315a558a6a387
+    name: get-latest-builder-images
+    script: |-
+      #!/usr/bin/env bash
+
+      set -euo pipefail
+
+      if [[ "$(params.builder-name)" == "" && "$(params.builder-kind)" != "" ]]; then
+        printf "Cannot provide 'builder-kind' without 'builder-name'" | tee $(results.message.path)
+        exit 1
+      fi
+
+      builderName=$(params.builder-name)
+      if [ "${builderName}" == "" ]; then
+        builderName="default"
+        printf "No builder name provided. Using 'default'" | tee $(results.message.path)
+      fi
+
+      builderKind=$(params.builder-kind)
+      if [ "${builderKind}" == "" ]; then
+        builderKind="clusterbuilder"
+        printf "No builder kind provided. Using 'clusterbuilder'" | tee $(results.message.path)
+      fi
+
+      builderReady=$(kubectl get ${builderKind} ${builderName} -ojsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+      if [ "${builderReady}" != "True" ]; then
+        message=$(kubectl get ${builderKind} ${builderName} -ojsonpath='{.status.conditions[?(@.type=="Ready")].message}')
+        printf "${builderKind} ${builderName} is not ready. message: ${message}" | tee $(results.message.path)
+        exit 1
+      fi
+
+      kubectl get ${builderKind} ${builderName} -ojsonpath='{.status.latestImage}' | tee $(results.builder-image.path)
+      kubectl get ${builderKind} ${builderName} -ojsonpath='{.status.stack.runImage}' | tee $(results.run-image.path)
+
+      printf "Builders resolved" | tee $(results.message.path)
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: fetch-tgz-content-oci
+spec:
+  params:
+  - description: location of the input
+    name: url
+    type: string
+  results:
+  - name: message
+    type: string
+  stepTemplate:
+    computeResources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsGroup: 1001
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+  steps:
+  - computeResources: {}
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:43e9d6e9b82e7e3e7103584448af4ad12fde0b748612a650480ce21d04579ce0
+    name: fetch
+    script: |
+      #!/bin/bash
+
+      set -euo pipefail
+
+      DIR=$(mktemp -d)
+
+      imgpkg pull -i $(params.url) -o $DIR
+      if [ $? -ne 0 ]; then
+        printf "download failed" | tee $(results.message.path)
+        exit 1
+      fi
+
+      cp -R $DIR/* $(workspaces.store.path)
+      if [ $? -ne 0 ]; then
+        printf "copy failed" | tee $(results.message.path)
+        exit 1
+      fi
+  workspaces:
+  - description: The store for the content
+    name: store
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: carvel-package
+spec:
+  description: A task that builds a Carvel Package
+  params:
+  - description: Name of the Workload. Used as a default for the Carvel Package secret
+      name.
+    name: workload-name
+    type: string
+  - description: Name of the registry + repository to push the imgpkg bundle to.
+    name: imgpkg-bundle-url
+    type: string
+  - default: ""
+    description: |
+      PEM encoded certificate data for the image registry where the files will be pushed to.
+    name: imgpkg-ca-cert-data
+    type: string
+  - default: "false"
+    description: Enable the use of IAAS based authentication for imgpkg.
+    name: imgpkg-iaas-auth-enabled
+    type: string
+  - description: The name of the Carvel Package
+    name: carvel-package-name
+    type: string
+  - description: Secret that provides customized values to the package installation's
+      templating steps
+    name: carvel-package-secret
+    type: string
+  - default: "false"
+    description: If set, generate openapiv3 definition for Carvel Package. If the
+      size of the Carvel Package definition exceeds 4KB, the Supply Chain will fail.
+    name: carvel-package-openapiv3-enabled
+    type: string
+  - default: default
+    description: Service account that gives kapp-controller privileges to create resources
+      in the namespace
+    name: carvel-package-service-account
+    type: string
+  results:
+  - description: Carvel distributable packages that enables users to install on a
+      different cluster.
+    name: carvel-package
+    type: string
+  - name: imgpkg-bundle
+    type: string
+  - name: carvel-package-filename
+    type: string
+  - name: carvel-package-version
+    type: string
+  stepTemplate:
+    computeResources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+  steps:
+  - computeResources: {}
+    env:
+    - name: DOCKER_CONFIG
+      value: /tekton/home/.docker/
+    - name: HOME
+      value: /tekton/home/
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:9fa9ec73b9c623d05bbe9c1d28a661b16152fba2dbff19bd2a9e8ae45dc0726e
+    name: build-imgpkg-bundle
+    script: |-
+      #!/bin/bash
+
+      set -euox pipefail
+
+      cd `mktemp -d`
+
+      echo "[DEBUG] $(workspaces.content.path)"
+      ls -al $(workspaces.content.path)
+
+      if ls $(workspaces.content.path)/*.yaml 1> /dev/null 2>&1; then
+        mv $(workspaces.content.path)/*.yaml .
+      fi
+
+      echo "[DEBUG] ."
+      ls -la
+
+      #############################################
+      #    build imgpkg bundle, openapiv3 spec    #
+      #############################################
+
+      values_filename=""
+      if [ -f "server-template-values.yaml" ]; then
+        values_filename=server-template-values.yaml
+      elif [ -f "web-template-values.yaml" ]; then
+        values_filename=web-template-values.yaml
+      elif [ -f "worker-template-values.yaml" ]; then
+        values_filename=worker-template-values.yaml
+      fi
+
+      if [ "$(params.carvel-package-openapiv3-enabled)" == "true" ] && [ ! -z "$values_filename" ]; then
+        ytt -f "$values_filename" --data-values-schema-inspect -o openapi-v3 > "$(workspaces.content.path)/schema-openapi.yml"
+      fi
+
+      mkdir -p .imgpkg
+      kbld -f . --imgpkg-lock-output ".imgpkg/images.yml"
+
+      echo "[DEBUG] .imgpkg/images.yml"
+      cat .imgpkg/images.yml
+
+      imgpkg_params=""
+      imgpkg_cert='$(params.imgpkg-ca-cert-data)'
+      if [[ ! -z "$imgpkg_cert" ]]; then
+        certs_dir=$(mktemp -d)
+        echo "$imgpkg_cert" > "$certs_dir/cert"
+        imgpkg_params="--registry-ca-cert-path=$certs_dir/cert"
+      fi
+
+      # this if-block can be simplified once params validation is implemented in supplychain for components
+      iaas_auth_enabled='$(params.imgpkg-iaas-auth-enabled)'
+      if [[ -z "$iaas_auth_enabled" ]]; then
+        export IMGPKG_ENABLE_IAAS_AUTH="false"
+      else
+        export IMGPKG_ENABLE_IAAS_AUTH="$iaas_auth_enabled"
+      fi
+
+      imgpkg_bundle_url='$(params.imgpkg-bundle-url)'
+      imgpkg push $imgpkg_params -b "$imgpkg_bundle_url" -f . --lock-output "package.lock"
+      IMGPKG_BUNDLE="$(awk -F"image: " '{if ($2) print $2;}' package.lock)"
+      cp package.lock $(workspaces.content.path)
+
+      echo -n "$IMGPKG_BUNDLE" > $(results.imgpkg-bundle.path)
+  - computeResources: {}
+    env:
+    - name: DOCKER_CONFIG
+      value: /tekton/home/.docker/
+    - name: HOME
+      value: /tekton/home/
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:9fa9ec73b9c623d05bbe9c1d28a661b16152fba2dbff19bd2a9e8ae45dc0726e
+    name: package-version
+    script: |-
+      #!/bin/bash
+
+      set -euo pipefail
+
+      cd `mktemp -d`
+
+      cp $(workspaces.content.path)/package.lock .
+      rm $(workspaces.content.path)/package.lock
+
+      imagename="$(awk -F"image: " '{if ($2) print $2;}' package.lock)"
+      echo "[DEBUG] imagename"
+      echo "$imagename"
+
+      git_commit=""
+      if [[ ! -z "$imagename" ]]; then
+        revision="$(krane config "$imagename" | jq -r '.config.Labels["org.opencontainers.image.revision"]')"
+        regex="^([a-zA-Z0-9\/_-]+)(\@sha1:)?([0-9a-f]{40})$"
+        if [[ "$revision" =~ $regex ]]; then
+          git_commit="${BASH_REMATCH[3]:0:7}"
+        fi
+      fi
+
+      current_date="$(date "+%Y%m%d%H%M%S.0.0")"
+
+      if [[ -z "${git_commit}" ]]; then
+        CARVEL_PACKAGE_VERSION="${current_date}"
+      else
+        CARVEL_PACKAGE_VERSION="${current_date}+build.${git_commit}"
+      fi
+
+      echo "${current_date}.yml" > $(results.carvel-package-filename.path)
+      echo -n "$CARVEL_PACKAGE_VERSION" > $(results.carvel-package-version.path)
+  - computeResources: {}
+    env:
+    - name: DOCKER_CONFIG
+      value: /tekton/home/.docker/
+    - name: HOME
+      value: /tekton/home/
+    image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:9fa9ec73b9c623d05bbe9c1d28a661b16152fba2dbff19bd2a9e8ae45dc0726e
+    name: build-carvel-package
+    script: |-
+      #!/bin/bash
+
+      set -euo pipefail
+
+      cd `mktemp -d`
+
+      # this if-block can be removed once params validation is implemented in supplychain for components
+      if [[ -z "$(params.carvel-package-name)" ]]; then
+        echo "[ERROR] workload.spec.carvel.packageName field is required to build carvel package."
+        exit 1
+      fi
+
+      ##############################
+      #    build carvel package    #
+      ##############################
+
+      CARVEL_PACKAGE_VERSION="$(cat $(results.carvel-package-version.path))"
+      IMGPKG_BUNDLE="$(cat $(results.imgpkg-bundle.path))"
+      CARVEL_PACKAGE_FILENAME="$(cat $(results.carvel-package-filename.path))"
+
+      cat <<EOF > ./package-template.yaml
+      #@ load("@ytt:data", "data")
+      #@ load("@ytt:yaml", "yaml")
+
+      apiVersion: data.packaging.carvel.dev/v1alpha1
+      kind: Package
+      metadata:
+        name: $(params.carvel-package-name).${CARVEL_PACKAGE_VERSION}
+      spec:
+        refName: $(params.carvel-package-name)
+        version: ${CARVEL_PACKAGE_VERSION}
+        releaseNotes: |
+          Release v${CARVEL_PACKAGE_VERSION} of package $(params.carvel-package-name)
+        template:
+          spec:
+            fetch:
+            - imgpkgBundle:
+                image: ${IMGPKG_BUNDLE}
+            template:
+            - ytt:
+                paths:
+                - "-"
+            - kbld:
+                paths:
+                - ".imgpkg/images.yml"
+                - "-"
+            deploy:
+            - kapp: {}
+        #@ if "openapi" in data.values:
+        valuesSchema:
+          openAPIv3: #@ yaml.decode(data.values.openapi)["components"]["schemas"]["dataValues"]
+        #@ end
+      EOF
+
+      if [ "$(params.carvel-package-openapiv3-enabled)" == "true" ] && [ -s $(workspaces.content.path)/schema-openapi.yml ]; then
+        ytt -f ./package-template.yaml --data-value openapi="$(cat $(workspaces.content.path)/schema-openapi.yml)" | tee package.yaml
+      else
+        ytt -f ./package-template.yaml | tee package.yaml
+      fi
+      rm -f $(workspaces.content.path)/schema-openapi.yml
+
+      #####################################
+      #    build carvel package install   #
+      #####################################
+
+      CARVEL_PKGI_FILENAME="packageinstall.yaml"
+
+      SA_NAME="default"
+      if [[ -n "$(params.carvel-package-service-account)" ]]; then
+        SA_NAME="$(params.carvel-package-service-account)"
+      fi
+
+      SECRET_NAME="$(params.workload-name)-secret"
+      if [[ -n "$(params.carvel-package-secret)" ]]; then
+        SECRET_NAME="$(params.carvel-package-secret)"
+      fi
+
+      cat <<EOF > ./${CARVEL_PKGI_FILENAME}
+      apiVersion: packaging.carvel.dev/v1alpha1
+      kind: PackageInstall
+      metadata:
+        name: $(params.carvel-package-name)-pkgi
+      spec:
+        packageRef:
+          refName: $(params.carvel-package-name)
+          versionSelection:
+            constraints: ${CARVEL_PACKAGE_VERSION}
+            prereleases: {}
+        serviceAccountName: ${SA_NAME}
+        values:
+        - secretRef:
+            name: ${SECRET_NAME}
+      EOF
+
+      gitops_subpath="$(workspaces.content.path)/$(params.carvel-package-name)"
+      mkdir -p "$gitops_subpath/packages"
+      cp package.yaml "$gitops_subpath/packages/${CARVEL_PACKAGE_FILENAME}"
+      cp packageinstall.yaml "$gitops_subpath/${CARVEL_PKGI_FILENAME}"
+
+      echo "[DEBUG] "$gitops_subpath/packages/${CARVEL_PACKAGE_FILENAME}""
+      cat "$gitops_subpath/packages/${CARVEL_PACKAGE_FILENAME}"
+
+      echo "[DEBUG] "$gitops_subpath/${CARVEL_PKGI_FILENAME}""
+      cat "$gitops_subpath/${CARVEL_PKGI_FILENAME}"
+
+      echo "[DEBUG] $(workspaces.content.path)"
+      ls -al "$(workspaces.content.path)"
+      ls -al "$(workspaces.content.path)/$(params.carvel-package-name)"
+      ls -al "$(workspaces.content.path)/$(params.carvel-package-name)/packages"
+  workspaces:
+  - description: The folder where we write the carvel package version and imgpkg bundle
+      path
+    name: content
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: source-git-provider
+spec:
+  description: This pipeline stores the head of the git repository into an oci store.
+  params:
+  - description: The name of the workload
+    name: workload-name
+    type: string
+  - description: The git repo URL to clone from.
+    name: git-url
+    type: string
+  - description: The git commit to clone.
+    name: sha
+    type: string
+  results:
+  - description: url of the resulting source object you can use in your chain
+    name: url
+    type: string
+    value: $(tasks.store.results.url)
+  - description: digest of the shipped content sent to 'url'
+    name: digest
+    type: string
+    value: $(tasks.store.results.digest)
+  tasks:
+  - name: fetch
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: revision
+      value: $(params.sha)
+    taskRef:
+      kind: Task
+      name: source-git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+  - name: strip-git
+    runAfter:
+    - fetch
+    taskSpec:
+      metadata: {}
+      spec: null
+      stepTemplate:
+        computeResources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+      steps:
+      - computeResources: {}
+        image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:0a00f4248dc1897f6f8d04c15f7f8b795c541af82adf9accf9f5189f5f755dc5
+        name: rm
+        script: |
+          #!/bin/bash
+
+          set -euo pipefail
+
+          rm -rf $(workspaces.content.path)/.git
+    workspaces:
+    - name: content
+      workspace: shared-data
+  - name: store
+    params:
+    - name: workload-name
+      value: $(params.workload-name)
+    runAfter:
+    - strip-git
+    taskRef:
+      kind: Task
+      name: store-content-oci
+    workspaces:
+    - name: input
+      workspace: shared-data
+  workspaces:
+  - description: |
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+    name: shared-data
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: buildpack-build
+spec:
+  description: build application image with kpack
+  params:
+  - description: name of workload used to generate build name
+    name: workload-name
+    type: string
+  - description: url of source registry image
+    name: source-url
+    type: string
+  - description: image to push built application to
+    name: image
+    type: string
+  - description: builder image to run build on
+    name: builder-image
+    type: string
+  - description: base image for built application
+    name: run-image
+    type: string
+  - description: sub directory in source to become root dir for build
+    name: sub-path
+    type: string
+  - description: git revision of source (used for generating correct build metadata)
+    name: revision
+    type: string
+  - description: workload resource
+    name: workload
+    type: string
+  - description: name of service account to use for build
+    name: service-account-name
+    type: string
+  results:
+  - description: url of the built image
+    name: url
+    type: string
+    value: $(tasks.build.results.image)
+  - description: digest of the built image
+    name: digest
+    type: string
+    value: $(tasks.calculate-digest.results.digest)
+  tasks:
+  - name: prepare-build
+    params:
+    - name: source-url
+      value: $(params.source-url)
+    - name: image
+      value: $(params.image)
+    - name: builder-image
+      value: $(params.builder-image)
+    - name: run-image
+      value: $(params.run-image)
+    - name: sub-path
+      value: $(params.sub-path)
+    - name: revision
+      value: $(params.revision)
+    - name: workload
+      value: $(params.workload)
+    - name: service-account-name
+      value: $(params.service-account-name)
+    taskRef:
+      kind: Task
+      name: prepare-build
+  - name: build
+    params:
+    - name: workload-name
+      value: $(params.workload-name)
+    - name: resource
+      value: $(tasks.prepare-build.results.build-spec)
+    runAfter:
+    - prepare-build
+    taskSpec:
+      apiVersion: managed-resource-controller.apps.tanzu.vmware.com/v1alpha1
+      kind: ManagedResource
+      metadata: {}
+      params:
+      - name: workload-name
+        type: string
+      - name: resource
+        type: string
+      spec:
+        healthRule:
+          singleConditionType: Succeeded
+        resourceSpec:
+          apiVersion: kpack.io/v1alpha2
+          kind: Build
+          metadata:
+            generateName: $(params.workload-name)-
+          spec: $(params.resource)
+        resultMappings:
+        - name: image
+          path: status.latestImage
+  - name: calculate-digest
+    params:
+    - name: image
+      value: $(tasks.build.results.image)
+    runAfter:
+    - build
+    taskRef:
+      kind: Task
+      name: calculate-digest
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: conventions
+spec:
+  description: Generates the Pod Conventions for a built image
+  params:
+  - description: The image to pass to the Cartographer Conventions service
+    name: image-url
+    type: string
+  - description: The workload object
+    name: workload
+    type: string
+  - description: The name of the workload
+    name: workload-name
+    type: string
+  results:
+  - description: url of the resulting source object you can use in your chain
+    name: url
+    type: string
+    value: $(tasks.store.results.url)
+  - description: digest of the shipped content sent to 'url'
+    name: digest
+    type: string
+    value: $(tasks.store.results.digest)
+  tasks:
+  - name: prepare
+    params:
+    - name: workload
+      value: $(params.workload)
+    - name: workload-name
+      value: $(params.workload-name)
+    - name: image-url
+      value: $(params.image-url)
+    taskSpec:
+      metadata: {}
+      params:
+      - name: image-url
+        type: string
+      - name: workload
+        type: string
+      - name: workload-name
+        type: string
+      results:
+      - description: the resource to create in the next step
+        name: resource
+        type: string
+      spec: null
+      stepTemplate:
+        computeResources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+      steps:
+      - computeResources: {}
+        image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:44a6fe08d6d108cbdcd1551963be7a6776524343f502e4a1d7412fcba2aab776
+        name: prepare-resource
+        script: |
+          #!/usr/bin/env bash
+
+          set -euo pipefail
+
+          echo '#@data/values' >> /tmp/values.yaml
+          echo '---' >> /tmp/values.yaml
+          echo '$(params.workload)' | yq -P -o yaml '{"env": .spec.env}' >> /tmp/values.yaml
+
+          echo
+          echo "[DEBUG] values.yaml"
+          cat /tmp/values.yaml
+
+          cat << EOF > /tmp/template.yaml
+          #@ load("@ytt:data", "data")
+          ---
+          serviceAccountName: default
+          template:
+            metadata:
+              annotations:
+                developer.conventions/target-containers: workload
+              labels:
+                app.kubernetes.io/component: run
+                app.kubernetes.io/part-of: $(params.workload-name)
+                apps.tanzu.vmware.com/has-tests: "true"
+                apps.tanzu.vmware.com/workload-type: web
+                carto.run/workload-name: $(params.workload-name)
+            spec:
+              containers:
+                - image: $(params.image-url)
+                  name: workload
+                  resources: {}
+                  securityContext:
+                    allowPrivilegeEscalation: false
+                    runAsUser: 1001
+                    capabilities:
+                      drop:
+                        - ALL
+                    seccompProfile:
+                      type: "RuntimeDefault"
+                    runAsNonRoot: true
+                  #@ if/end hasattr(data.values, "env"):
+                  env: #@ data.values.env
+              serviceAccountName: default
+          EOF
+
+          echo
+          echo "[DEBUG] template.yaml"
+          cat /tmp/template.yaml
+
+          ytt -f /tmp/template.yaml -f /tmp/values.yaml > /tmp/podintent.yaml
+
+          echo
+          echo "[DEBUG] podintent.yaml"
+          cat /tmp/podintent.yaml
+
+          cat /tmp/podintent.yaml | yq -oj | jq -c > $(results.resource.path)
+  - name: conventions
+    params:
+    - name: image-url
+      value: $(params.image-url)
+    - name: workload-name
+      value: $(params.workload-name)
+    - name: resource
+      value: $(tasks.prepare.results.resource)
+    runAfter:
+    - prepare
+    taskSpec:
+      apiVersion: managed-resource-controller.apps.tanzu.vmware.com/v1alpha1
+      kind: ManagedResource
+      metadata: {}
+      params:
+      - name: image-url
+        type: string
+      - name: workload-name
+        type: string
+      - name: resource
+        type: string
+      spec:
+        healthRule:
+          singleConditionType: ConventionsApplied
+        resourceSpec:
+          apiVersion: conventions.carto.run/v1alpha1
+          kind: PodIntent
+          metadata:
+            generateName: $(params.workload-name)-
+          spec: $(params.resource)
+        resultMappings:
+        - name: template
+          path: status.template
+  - name: format-result
+    params:
+    - name: json
+      value: $(tasks.conventions.results.template)
+    - name: workload-name
+      value: $(params.workload-name)
+    runAfter:
+    - conventions
+    taskSpec:
+      metadata: {}
+      params:
+      - name: json
+        type: string
+      - name: workload-name
+        type: string
+      spec: null
+      stepTemplate:
+        computeResources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+      steps:
+      - computeResources: {}
+        image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:44a6fe08d6d108cbdcd1551963be7a6776524343f502e4a1d7412fcba2aab776
+        name: format-result
+        script: "#!/usr/bin/env bash\n\nset -x\nset -euo pipefail\n\ncd `mktemp -d`\ncat
+          << EOF > values.yaml\n#@data/values\n\n---\nEOF\n\necho '$(params.json)'
+          | yq -P -o yaml >> values.yaml\n\necho \"[DEBUG] values.yaml\"\ncat values.yaml\n\ncat
+          << EOF > template.yaml\n#@ load(\"@ytt:data\", \"data\")\n\n---\ntemplate:
+          \n  spec: #@ data.values.spec\nEOF\n\necho \"[DEBUG] template.yaml\"\ncat
+          template.yaml\n\nytt -f template.yaml -f values.yaml > app-config.yaml\necho
+          \"[DEBUG] app-config.yaml\"\ncat app-config.yaml\n\nrm template.yaml\nrm
+          values.yaml\n\ncp app-config.yaml $(workspaces.shared-data.path)/\n"
+      workspaces:
+      - description: The shared content
+        name: shared-data
+    workspaces:
+    - name: shared-data
+  - name: store
+    params:
+    - name: workload-name
+      value: $(params.workload-name)
+    runAfter:
+    - format-result
+    taskRef:
+      kind: Task
+      name: store-content-oci
+    workspaces:
+    - name: input
+      workspace: shared-data
+  workspaces:
+  - description: |
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+    name: shared-data
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: app-config-server
+spec:
+  description: Package your project into a carvel package
+  params:
+  - description: Location of the config bundle
+    name: config-url
+    type: string
+  - description: Name of the workload
+    name: workload-name
+    type: string
+  - description: workload labels
+    name: workload-labels
+    type: string
+  - description: Annotations of the workload
+    name: workload-annotations
+    type: string
+  - description: ports for the service
+    name: ports
+    type: string
+  - description: configuration of the Deployment resource
+    name: deployment
+    type: string
+  - description: configuration of the Service resource
+    name: service
+    type: string
+  - description: configuration of the HTTPRoute resource
+    name: http-route
+    type: string
+  - description: configuration of the Ingress resource
+    name: ingress
+    type: string
+  results:
+  - description: url of the resulting source object you can use in your chain
+    name: url
+    type: string
+    value: $(tasks.store.results.url)
+  - description: digest of the shipped content sent to 'url'
+    name: digest
+    type: string
+    value: $(tasks.store.results.digest)
+  - description: url of the resulting source object you can use in your chain
+    name: url-overlay
+    type: string
+    value: $(tasks.store-overlay.results.url)
+  - description: digest of the shipped content sent to 'url'
+    name: digest-overlay
+    type: string
+    value: $(tasks.store-overlay.results.digest)
+  tasks:
+  - name: fetch-conventions
+    params:
+    - name: url
+      value: $(params.config-url)
+    taskRef:
+      kind: Task
+      name: fetch-tgz-content-oci
+    workspaces:
+    - name: store
+      workspace: shared-data
+  - name: server-template
+    params:
+    - name: workload-name
+      value: $(params.workload-name)
+    - name: workload-labels
+      value: $(params.workload-labels)
+    - name: workload-annotations
+      value: $(params.workload-annotations)
+    - name: ports
+      value: $(params.ports)
+    - name: deployment
+      value: $(params.deployment)
+    - name: service
+      value: $(params.service)
+    - name: http-route
+      value: $(params.http-route)
+    - name: ingress
+      value: $(params.ingress)
+    runAfter:
+    - fetch-conventions
+    taskSpec:
+      metadata: {}
+      params:
+      - name: workload-name
+        type: string
+      - name: workload-labels
+        type: string
+      - name: workload-annotations
+        type: string
+      - name: ports
+        type: string
+      - name: deployment
+        type: string
+      - name: service
+        type: string
+      - name: http-route
+        type: string
+      - name: ingress
+        type: string
+      results:
+      - name: template
+        type: string
+      spec: null
+      stepTemplate:
+        computeResources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+      steps:
+      - computeResources: {}
+        image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:896aec1ffa59761aa37557c1d170dac3f08aed4d0e89e0d92ba4ca3d676b7f9f
+        name: create-template
+        script: |
+          #!/bin/bash
+
+          set -euo pipefail
+
+          ls -al $(workspaces.content.path)
+          conv=$(cat $(workspaces.content.path)/app-config.yaml)
+
+          if [[ '$(params.http-route)' == \$\(* ]]; then
+            httproute=""
+          else
+            httproute='$(params.http-route)'
+          fi
+
+          if [[ '$(params.ingress)' == \$\(* ]]; then
+            ingress=""
+          else
+            ingress='$(params.ingress)'
+          fi
+
+          if [[ '$(params.deployment)' == \$\(* ]]; then
+            deployment=""
+          else
+            deployment='$(params.deployment)'
+          fi
+
+          if [[ '$(params.service)' == \$\(* ]]; then
+            service=""
+          else
+            service='$(params.service)'
+          fi
+
+          if [[ '$(params.ports)' == \$\(* ]]; then
+            ports=""
+          else
+            ports='$(params.ports)'
+          fi
+
+          cd `mktemp -d`
+
+          if [[ '$(params.workload-name)' == \$\(* ]]; then
+            workload_name=""
+          else
+            workload_name='$(params.workload-name)'
+          fi
+
+          if [[ '$(params.workload-labels)' == \$\(* ]]; then
+            workload_labels=""
+          else
+            workload_labels='$(params.workload-labels)'
+          fi
+
+          if [[ '$(params.workload-annotations)' == \$\(* ]]; then
+            workload_annotations=""
+          else
+            workload_annotations='$(params.workload-annotations)'
+          fi
+
+          cd `mktemp -d`
+
+          create_template \
+            -workload-name="${workload_name}" \
+            -conventions="${conv}" \
+            -ports="${ports}" \
+            -deployment="${deployment}" \
+            -service="${service}" \
+            -http-route="${httproute}" \
+            -ingress="${ingress}" \
+            -workload-labels="${workload_labels}" \
+            -workload-annotations="${workload_annotations}"
+          if [ $? -ne 0 ]; then
+            echo "create template failed"
+            tee error.txt
+            exit 1
+          fi
+
+          cat appconfig.yaml
+
+          rm $(workspaces.content.path)/app-config.yaml
+
+          cat appconfig.yaml > $(results.template.path)
+          cp  appconfig.yaml $(workspaces.content.path)
+    workspaces:
+    - name: content
+      workspace: shared-data
+  - name: store
+    params:
+    - name: workload-name
+      value: $(params.workload-name)
+    runAfter:
+    - server-template
+    taskRef:
+      kind: Task
+      name: store-content-oci
+    workspaces:
+    - name: input
+      workspace: shared-data
+  - name: add-overlays
+    params:
+    - name: workload-name
+      value: $(params.workload-name)
+    - name: deployment
+      value: $(params.deployment)
+    runAfter:
+    - store
+    taskSpec:
+      metadata: {}
+      params:
+      - name: deployment
+        type: string
+      - name: workload-name
+        type: string
+      results:
+      - name: overlays
+        type: string
+      - name: values
+        type: string
+      spec: null
+      stepTemplate:
+        computeResources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+      steps:
+      - computeResources: {}
+        image: reg.perfect300rock.com/tanzu-application-platform/tap-packages@sha256:896aec1ffa59761aa37557c1d170dac3f08aed4d0e89e0d92ba4ca3d676b7f9f
+        name: write-file
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+
+          cat <<EOF > $(workspaces.content.path)/server-template-overlays.yaml
+          #@ load("@ytt:overlay", "overlay")
+          #@ load("@ytt:data", "data")
+
+          #@overlay/match by=overlay.subset({"apiVersion":"apps/v1", "kind": "Deployment"})
+          ---
+          spec:
+            #@overlay/match missing_ok=True
+            replicas: #@ data.values.replicas
+
+            #@ if data.values.strategy != "":
+            #@overlay/match missing_ok=True
+            strategy: #@ data.values.strategy
+            #@ end
+
+            #@overlay/match missing_ok=True
+            template:
+              #@overlay/match missing_ok=True
+              spec:
+                #@overlay/match missing_ok=True
+                containers:
+                  #@overlay/match by=overlay.index(0)
+                  - name: workload
+                    #@ if data.values.livenessProbe != "":
+                    #@overlay/match missing_ok=True
+                    livenessProbe: #@ data.values.livenessProbe
+                    #@ end
+
+                    #@ if data.values.readinessProbe != "":
+                    #@overlay/match missing_ok=True
+                    readinessProbe: #@ data.values.readinessProbe
+                    #@ end
+
+                    #@ if data.values.resources != "":
+                    #@overlay/match missing_ok=True
+                    resources: #@ data.values.resources
+                    #@ end
+
+                    #@ if data.values.securityContext != "":
+                    #@overlay/match missing_ok=True
+                    securityContext: #@ data.values.securityContext
+                    #@ end
+
+                    #@ if data.values.env != "":
+                    #@overlay/match missing_ok=True
+                    env: #@ data.values.env
+                    #@ end
+
+          #@ if data.values.http_route != None:
+          ---
+          apiVersion: gateway.networking.k8s.io/v1beta1
+          kind: HTTPRoute
+          metadata:
+            name: #@ data.values.workload_name + "-route"
+          spec:
+            parentRefs:
+            #@ for/end gateway in data.values.http_route.gateways:
+            - group: gateway.networking.k8s.io
+              kind: Gateway
+              name: #@ gateway.name
+              sectionName: #@ gateway.protocol + "-" + data.values.workload_name
+            rules:
+            - backendRefs:
+              - name: #@ data.values.workload_name
+                port: #@ data.values.port
+          #@ elif data.values.hostname != "":
+          ---
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: #@ data.values.workload_name
+            annotations:
+              cert-manager.io/cluster-issuer:  #@ data.values.cluster_issuer
+              ingress.kubernetes.io/force-ssl-redirect: "true"
+              kubernetes.io/ingress.class: contour
+              kapp.k14s.io/change-rule: "upsert after upserting Services"
+            labels:
+              app.kubernetes.io/component: "run"
+              carto.run/workload-name:  #@ data.values.workload_name
+          spec:
+            tls:
+              - secretName: #@ data.values.workload_name
+                hosts:
+                - #@ data.values.hostname
+            rules:
+            - host: #@ data.values.hostname
+              http:
+                paths:
+                - pathType: Prefix
+                  path: /
+                  backend:
+                    service:
+                      name: #@ data.values.workload_name
+                      port:
+                        number: #@ data.values.port
+          #@ end
+          EOF
+
+          echo '$(params.deployment)'
+          if [[ '$(params.deployment)' == \$\(* ]]; then
+            deployment=""
+          else
+            deployment='$(params.deployment)'
+          fi
+
+          livenessProbe=$(echo "${deployment}"| jq .livenessProbe)
+          readinessProbe=$(echo "${deployment}"| jq .readinessProbe)
+          strategy=$(echo "${deployment}"| jq .strategy)
+          resources=$(echo "${deployment}"| jq .resources)
+          env=$(echo "${deployment}"| jq .env)
+          securityContext=$(echo "${deployment}"| jq .securityContext)
+
+          cat <<EOF > $(workspaces.content.path)/server-template-values.yaml
+          #@data/values
+          ---
+          #@schema/title "Workload name"
+          #@schema/example "tanzu-java-web-app"
+          #@schema/validation min_len=1
+          workload_name: $(params.workload-name)
+
+          #@schema/title "Replicas"
+          replicas: 1
+
+          #@schema/title "LivenessProbe"
+          $(if [ "${livenessProbe}" == "null" ]; then
+          echo "livenessProbe: \"\""
+          else
+          echo "livenessProbe:"
+          echo ${livenessProbe} | yq eval -P --indent 2 -oy - | sed 's/^/  /'
+          fi)
+
+          #@schema/title "ReadinessProbe"
+          $(if [ "${readinessProbe}" == "null" ]; then
+          echo "readinessProbe: \"\""
+          else
+          echo "readinessProbe:"
+          echo ${readinessProbe} | yq eval -P --indent 2 -oy - | sed 's/^/  /'
+          fi)
+
+          #@schema/title "Strategy"
+          $(if [ "${strategy}" == "null" ]; then
+          echo "strategy: \"\""
+          else
+          echo "strategy:"
+          echo ${strategy} | yq eval -P --indent 2 -oy - | sed 's/^/  /'
+          fi)
+
+          #@schema/title "Resources"
+          $(if [ "${resources}" == "null" ]; then
+          echo "resources: \"\""
+          else
+          echo -e "resources:"
+          echo ${resources} | yq eval -P --indent 2 -oy - | sed 's/^/  /'
+          fi)
+
+          #@schema/title "Env"
+          $(if [ "${env}" == "null" ]; then
+          echo "env: \"\""
+          else
+          echo "env:"
+          echo ${env} | yq eval -P --indent 2 -oy - | sed 's/^/  /'
+          fi)
+
+          #@schema/title "SecurityContext"
+          $(if [ "${securityContext}" == "null" ]; then
+          echo "securityContext: \"\""
+          else
+          echo "securityContext:"
+          echo ${securityContext} | yq eval -P --indent 2 -oy - | sed 's/^/  /'
+          fi)
+
+          #@schema/title "Port"
+          port: 8080
+
+          #@schema/title "Hostname"
+          #@schema/example "app.tanzu.vmware.com"
+          hostname: ""
+
+          #@schema/title "Cluster Issuer"
+          cluster_issuer: "tap-ingress-selfsigned"
+
+          #@schema/nullable
+          http_route:
+              #@schema/default [{"protocol": "https", "name": "default-gateway"}]
+              gateways:
+              - protocol: ""
+                name: ""
+          EOF
+
+          echo "$(workspaces.content.path)/server-template-overlays.yaml" | tee $(results.overlays.path)
+          echo "$(workspaces.content.path)/server-template-values.yaml" | tee $(results.values.path)
+    workspaces:
+    - name: content
+      workspace: overlay-data
+  - name: store-overlay
+    params:
+    - name: workload-name
+      value: $(params.workload-name)
+    runAfter:
+    - add-overlays
+    taskRef:
+      kind: Task
+      name: store-content-oci
+    workspaces:
+    - name: input
+      workspace: overlay-data
+  workspaces:
+  - description: |
+      This workspace contains the previous component files, so they can be read by the
+      next task.
+    name: shared-data
+  - description: |
+      This workspace contains the generated overlay files, so they can be read by the
+      next task.
+    name: overlay-data
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: carvel-package
+spec:
+  description: Package your project into a carvel package
+  params:
+  - description: Name of of the workload
+    name: workload-name
+    type: string
+  - description: Location of the config bundle
+    name: config-url
+    type: string
+  - description: Location of the ytt bundle
+    name: ytt-url
+    type: string
+  - description: URL to write the imgpkg bundle for the Carvel Package.
+    name: imgpkg-bundle-url
+    type: string
+  - description: Enable the use of IAAS based authentication for imgpkg.
+    name: imgpkg-iaas-auth-enabled
+    type: string
+  - description: |
+      PEM encoded certificate data for the image registry where the files will be pushed to.
+    name: imgpkg-ca-cert-data
+    type: string
+  - description: Name of of the Package
+    name: carvel-package-name
+    type: string
+  - description: Secret that provides customized values to the package installation's
+      templating steps
+    name: carvel-package-secret
+    type: string
+  - description: If set, generate openapiv3 definition for Carvel Package. If the
+      size of the Carvel Package definition exceeds 4KB, the Supply Chain will fail.
+    name: carvel-package-openapiv3-enabled
+    type: string
+  - description: Service account that gives kapp-controller privileges to create resources
+      in the namespace
+    name: carvel-package-service-account
+    type: string
+  results:
+  - description: url of the resulting source object you can use in your chain
+    name: url
+    type: string
+    value: $(tasks.store.results.url)
+  - description: digest of the shipped content sent to 'url'
+    name: digest
+    type: string
+    value: $(tasks.store.results.digest)
+  tasks:
+  - name: fetch-config
+    params:
+    - name: url
+      value: $(params.config-url)
+    taskRef:
+      kind: Task
+      name: fetch-tgz-content-oci
+    workspaces:
+    - name: store
+      workspace: shared-data
+  - name: fetch-ytt
+    params:
+    - name: url
+      value: $(params.ytt-url)
+    taskRef:
+      kind: Task
+      name: fetch-tgz-content-oci
+    workspaces:
+    - name: store
+      workspace: shared-data
+  - name: carvel-package
+    params:
+    - name: workload-name
+      value: $(params.workload-name)
+    - name: imgpkg-bundle-url
+      value: $(params.imgpkg-bundle-url)
+    - name: imgpkg-iaas-auth-enabled
+      value: $(params.imgpkg-iaas-auth-enabled)
+    - name: imgpkg-ca-cert-data
+      value: $(params.imgpkg-ca-cert-data)
+    - name: carvel-package-name
+      value: $(params.carvel-package-name)
+    - name: carvel-package-openapiv3-enabled
+      value: $(params.carvel-package-openapiv3-enabled)
+    - name: carvel-package-service-account
+      value: $(params.carvel-package-service-account)
+    - name: carvel-package-secret
+      value: $(params.carvel-package-secret)
+    runAfter:
+    - fetch-config
+    - fetch-ytt
+    taskRef:
+      kind: Task
+      name: carvel-package
+    workspaces:
+    - name: content
+      workspace: shared-data
+  - name: store
+    params:
+    - name: workload-name
+      value: $(params.workload-name)
+    runAfter:
+    - carvel-package
+    taskRef:
+      kind: Task
+      name: store-content-oci
+    workspaces:
+    - name: input
+      workspace: shared-data
+  workspaces:
+  - description: |
+      This workspace contains the cloned repo files, so they can be read by the
+      next task.
+    name: shared-data
+---
+apiVersion: supply-chain.apps.tanzu.vmware.com/v1alpha1
+kind: Component
+metadata:
+  name: source-git-provider-1.0.0
+spec:
+  config:
+  - path: spec.source
+    schema:
+      properties:
+        git:
+          description: |
+            Use this object to retrieve source from a git repository.
+            The tag, commit and branch fields are mutually exclusive, use only one.
+          properties:
+            branch:
+              description: A git branch ref to watch for new source
+              example: main
+              type: string
+            commit:
+              description: A git commit sha to use
+              type: string
+            tag:
+              description: A git tag ref to watch for new source
+              example: v1.0.0
+              type: string
+            url:
+              description: The url to the git source repository
+              example: https://github.com/acme/my-workload.git
+              type: string
+          required:
+          - url
+          type: object
+        subPath:
+          default: ""
+          description: The sub path in the bundle to locate source code
+          example: sub-dir
+          type: string
+      required:
+      - git
+      type: object
+  description: Monitors a git repository
+  outputs:
+  - digest: $(pipeline.results.digest)
+    name: source
+    type: source
+    url: $(pipeline.results.url)
+  - digest: $(resumptions.check-source.results.sha)
+    name: git
+    type: git
+    url: $(resumptions.check-source.results.url)
+  pipelineRun:
+    params:
+    - name: workload-name
+      value: $(workload.metadata.name)
+    - name: git-url
+      value: $(workload.spec.source.git.url)
+    - name: sha
+      value: $(resumptions.check-source.results.sha)
+    pipelineRef:
+      name: source-git-provider
+    taskRunSpecs:
+    - pipelineTaskName: fetch
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+    - pipelineTaskName: strip-git
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+    - pipelineTaskName: store
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+    workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+  resumptions:
+  - name: check-source
+    params:
+    - name: git-branch
+      value: $(workload.spec.source.git.branch)
+    - name: git-url
+      value: $(workload.spec.source.git.url)
+    - name: git-commit
+      value: $(workload.spec.source.git.commit)
+    - name: git-tag
+      value: $(workload.spec.source.git.tag)
+    taskRef:
+      name: source-git-check
+    trigger:
+      runAfter: 300s
+---
+apiVersion: supply-chain.apps.tanzu.vmware.com/v1alpha1
+kind: Component
+metadata:
+  name: buildpack-build-1.0.0
+spec:
+  config:
+  - path: spec.registry
+    schema:
+      description: |
+        Registry to use
+      properties:
+        repository:
+          description: The repository to use
+          type: string
+        server:
+          description: The registry address
+          type: string
+      required:
+      - server
+      - repository
+      type: object
+  - path: spec.build
+    schema:
+      description: |
+        Kpack build specification
+      properties:
+        builder:
+          description: Configure workload to use a non-default builder or clusterbuilder
+          properties:
+            kind:
+              default: clusterbuilder
+              description: builder kind
+              example: clusterbuilder
+              type: string
+            name:
+              default: default
+              description: builder name
+              example: tiny-jammy
+              type: string
+          type: object
+        cache:
+          description: |
+            cache options
+          properties:
+            image:
+              default: $(workload.spec.registry.server)/$(workload.spec.registry.repository)/$(workload.metadata.name)-cache
+              description: |
+                cache image to use
+              example: myregistry.com/some-repository/my-cache
+              type: string
+          type: object
+        serviceAccountName:
+          default: default
+          description: |
+            Service account to use
+          type: string
+      type: object
+  - path: spec.source.subPath
+    schema:
+      default: ""
+      description: path inside the source to build from (build has no access to paths
+        above the subPath)
+      example: some-dir
+      type: string
+  - path: spec.build.env
+    schema:
+      items:
+        properties:
+          name:
+            type: string
+          value:
+            type: string
+        required:
+        - name
+        - value
+        type: object
+      type: array
+  description: Builds an app with buildpacks using kpack
+  inputs:
+  - name: source
+    type: source
+  - name: git
+    type: git
+  outputs:
+  - digest: ""
+    name: image
+    type: image
+    url: $(pipeline.results.url)
+  pipelineRun:
+    params:
+    - name: source-url
+      value: $(inputs.source.url)
+    - name: revision
+      value: $(inputs.git.digest)
+    - name: sub-path
+      value: $(workload.spec.source.subPath)
+    - name: workload-name
+      value: $(workload.metadata.name)
+    - name: image
+      value: $(workload.spec.registry.server)/$(workload.spec.registry.repository)/$(workload.metadata.name)
+    - name: run-image
+      value: $(resumptions.check-builders.results.run-image)
+    - name: builder-image
+      value: $(resumptions.check-builders.results.builder-image)
+    - name: service-account-name
+      value: $(workload.spec.build.serviceAccountName)
+    - name: workload
+      value: $(workload)
+    pipelineRef:
+      name: buildpack-build
+    taskRunSpecs:
+    - pipelineTaskName: calculate-digest
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+    - pipelineTaskName: prepare-build
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+  resumptions:
+  - name: check-builders
+    params:
+    - name: builderName
+      value: $(workload.spec.build.builder.name)
+    - name: builderKind
+      value: $(workload.spec.build.builder.kind)
+    taskRef:
+      name: check-builders
+    trigger:
+      runAfter: 600s
+---
+apiVersion: supply-chain.apps.tanzu.vmware.com/v1alpha1
+kind: Component
+metadata:
+  name: conventions-1.0.0
+spec:
+  config:
+  - path: spec.env
+    schema:
+      items:
+        properties:
+          name:
+            type: string
+          value:
+            type: string
+        required:
+        - name
+        - value
+        type: object
+      type: array
+  description: Use the Cartographer Conventions service to generate decorated pod
+    template specs
+  inputs:
+  - name: image
+    type: image
+  outputs:
+  - name: conventions
+    type: conventions
+  pipelineRun:
+    params:
+    - name: image-url
+      value: $(inputs.image.url)
+    - name: workload-name
+      value: $(workload.metadata.name)
+    - name: workload
+      value: $(workload)
+    pipelineRef:
+      name: conventions
+    taskRunSpecs:
+    - pipelineTaskName: prepare
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+    - pipelineTaskName: format-result
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+    - pipelineTaskName: store
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+    workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+---
+apiVersion: supply-chain.apps.tanzu.vmware.com/v1alpha1
+kind: Component
+metadata:
+  name: app-config-server-1.0.0
+spec:
+  config:
+  - path: spec.deployment
+    schema:
+      description: |
+        Configuration for the deployment to be generated
+      properties:
+        env:
+          items:
+            description: Environment variables to be added to the app container
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+            type: object
+          type: array
+        livenessProbe:
+          description: If specified, all readiness gates will be evaluated for pod
+            liveness.
+          properties:
+            exec:
+              items:
+                type: string
+              type: array
+            failureThreshold:
+              type: integer
+            grpc:
+              properties:
+                port:
+                  type: integer
+                service:
+                  type: string
+              type: object
+            httpGet:
+              properties:
+                host:
+                  type: string
+                httpHeaders:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                    type: object
+                  type: array
+                path:
+                  type: string
+                port:
+                  type: string
+                scheme:
+                  type: string
+              type: object
+            initialDelaySeconds:
+              type: integer
+            periodSeconds:
+              type: integer
+            successThreshold:
+              type: integer
+            tcpSocket:
+              properties:
+                host:
+                  type: string
+                port:
+                  type: string
+              type: object
+            terminationGracePeriodSeconds:
+              type: integer
+            timeoutSeconds:
+              type: integer
+          type: object
+        name:
+          description: The name of the deployment resource. defaults to workload if
+            empty
+          type: string
+        readinessProbe:
+          description: If specified, all readiness gates will be evaluated for pod
+            readiness.
+          properties:
+            exec:
+              items:
+                type: string
+              type: array
+            failureThreshold:
+              type: integer
+            grpc:
+              properties:
+                port:
+                  type: integer
+                service:
+                  type: string
+              type: object
+            httpGet:
+              properties:
+                host:
+                  type: string
+                httpHeaders:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                    type: object
+                  type: array
+                path:
+                  type: string
+                port:
+                  type: string
+                scheme:
+                  type: string
+              type: object
+            initialDelaySeconds:
+              type: integer
+            periodSeconds:
+              type: integer
+            successThreshold:
+              type: integer
+            tcpSocket:
+              properties:
+                host:
+                  type: string
+                port:
+                  type: string
+              type: object
+            terminationGracePeriodSeconds:
+              type: integer
+            timeoutSeconds:
+              type: integer
+          type: object
+        replicas:
+          description: Number of desired pods.
+          type: integer
+        resources:
+          description: Compute Resources required by the app container.
+          properties:
+            limits:
+              description: max limits for CPU and memory
+              properties:
+                cpu:
+                  type: string
+                memory:
+                  type: string
+              type: object
+            requests:
+              description: min limits for CPU and memory
+              properties:
+                cpu:
+                  type: string
+                memory:
+                  type: string
+              type: object
+          type: object
+        securityContext:
+          description: pod-level security attributes and common container settings
+          properties:
+            runAsUser:
+              type: string
+          type: object
+        strategy:
+          description: DeploymentStrategy describes how to replace existing pods with
+            new ones.
+          properties:
+            rollingUpdate:
+              properties:
+                maxSurge:
+                  type: string
+                maxUnavailable:
+                  type: string
+              type: object
+            type:
+              type: string
+          type: object
+      required:
+      - replicas
+      type: object
+  - path: spec.service
+    schema:
+      description: |
+        Configuration for the service to be generated
+      properties:
+        name:
+          description: The name of the ksvc resource. defaults to workload if empty
+          type: string
+        ports:
+          description: The list of ports that are exposed by this service.
+          items:
+            properties:
+              containerport:
+                type: string
+              name:
+                type: string
+              port:
+                type: integer
+            required:
+            - containerport
+            - port
+            - name
+            type: object
+          type: array
+      type: object
+  - path: spec.ingress
+    schema:
+      description: |
+        Configuration for the ingress to be generated
+      properties:
+        clusterIssuer:
+          description: the value to used in the annotation cert-manager.io/cluster-issuer
+          type: string
+        hostname:
+          description: hostname is the fully qualified domain name of a network host,
+            as defined by RFC 3986
+          type: string
+        name:
+          description: The name of the ingress resource. defaults to workload if empty
+          type: string
+        port:
+          description: provides information about the ports exposed by this LoadBalancer
+          type: integer
+        tlsSecretName:
+          description: secretName is the name of the secret used to terminate TLS
+            traffic
+          type: string
+      type: object
+  - path: spec.httpRoute
+    schema:
+      description: |
+        Configuration for the http Route to be generated
+      properties:
+        gatewayName:
+          description: To be used in the httpRoute parentRef
+          type: string
+        gatewayProtocol:
+          description: To be used in the httpRoute parentRef
+          type: string
+        name:
+          description: The name of the httpRoute resource. defaults to workload if
+            empty
+          type: string
+        port:
+          description: To be used in the httpRoute BackendRef
+          type: integer
+      type: object
+  - path: spec.registry
+    schema:
+      description: |
+        Configuration for the registry to use
+      properties:
+        repository:
+          description: The name of the repository
+          example: my-repository
+          type: string
+        server:
+          description: The name of the registry server, e.g. docker.io
+          example: docker.io
+          type: string
+      required:
+      - server
+      - repository
+      type: object
+  description: Generates a server workload template from a config bundle
+  inputs:
+  - name: conventions
+    type: conventions
+  outputs:
+  - digest: $(pipeline.results.digest)
+    name: oci-yaml-files
+    type: oci-yaml-files
+    url: $(pipeline.results.url)
+  - digest: $(pipeline.results.digest-overlay)
+    name: oci-ytt-files
+    type: oci-ytt-files
+    url: $(pipeline.results.url-overlay)
+  pipelineRun:
+    params:
+    - name: config-url
+      value: $(inputs.conventions.url)
+    - name: workload-name
+      value: $(workload.metadata.name)
+    - name: workload-labels
+      value: $(workload.metadata.labels)
+    - name: workload-annotations
+      value: $(workload.metadata.annotations)
+    - name: ports
+      value: $(workload.spec.service.ports)
+    - name: deployment
+      value: $(workload.spec.deployment)
+    - name: service
+      value: $(workload.spec.service)
+    - name: http-route
+      value: $(workload.spec.httpRoute)
+    - name: ingress
+      value: $(workload.spec.ingress)
+    pipelineRef:
+      name: app-config-server
+    taskRunTemplate:
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+    workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+    - name: overlay-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+---
+apiVersion: supply-chain.apps.tanzu.vmware.com/v1alpha1
+kind: Component
+metadata:
+  name: carvel-package-1.0.0
+spec:
+  config:
+  - path: spec.registry
+    schema:
+      description: |
+        Configuration for the registry to use
+      properties:
+        repository:
+          description: The name of the repository
+          example: my-repository
+          type: string
+        server:
+          description: The name of the registry server, e.g. docker.io
+          example: docker.io
+          type: string
+      required:
+      - server
+      - repository
+      type: object
+  - path: spec.carvel
+    schema:
+      description: |
+        Configuration for the generated carvel package
+      properties:
+        caCertData:
+          description: |
+            PEM encoded certificate data for the image registry where the files will be pushed to.
+          type: string
+        iaasAuthEnabled:
+          description: Enable the use of IAAS based authentication for imgpkg
+          example: false
+          type: boolean
+        openapiv3Enabled:
+          description: Generate openapiv3 definition for carvel package
+          example: true
+          type: boolean
+        packageName:
+          description: The name of the carvel package
+          example: mypackage.acme.com
+          type: string
+        secretName:
+          description: Secret that provides customized values to the package installation's
+            templating steps
+          example: mypackage-values-secret
+          type: string
+        serviceAccountName:
+          description: Service account that gives kapp-controller privileges to create
+            resources in the namespace
+          example: sa-workload
+          type: string
+      required:
+      - packageName
+      type: object
+  description: Generates a carvel package from a config bundle
+  inputs:
+  - name: oci-yaml-files
+    type: oci-yaml-files
+  - name: oci-ytt-files
+    type: oci-ytt-files
+  outputs:
+  - name: package
+    type: package
+  pipelineRun:
+    params:
+    - name: workload-name
+      value: $(workload.metadata.name)
+    - name: config-url
+      value: $(inputs.oci-yaml-files.url)
+    - name: ytt-url
+      value: $(inputs.oci-ytt-files.url)
+    - name: imgpkg-bundle-url
+      value: $(workload.spec.registry.server)/$(workload.spec.registry.repository)/$(workload.metadata.name)-bundle
+    - name: imgpkg-iaas-auth-enabled
+      value: $(workload.spec.carvel.iaasAuthEnabled)
+    - name: imgpkg-ca-cert-data
+      value: $(workload.spec.carvel.caCertData)
+    - name: carvel-package-name
+      value: $(workload.spec.carvel.packageName)
+    - name: carvel-package-secret
+      value: $(workload.spec.carvel.secretName)
+    - name: carvel-package-openapiv3-enabled
+      value: $(workload.spec.carvel.openapiv3Enabled)
+    - name: carvel-package-service-account
+      value: $(workload.spec.carvel.serviceAccountName)
+    pipelineRef:
+      name: carvel-package
+    taskRunTemplate:
+      podTemplate:
+        securityContext:
+          fsGroup: 1000
+          runAsGroup: 1000
+          runAsUser: 1001
+    workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+---
+apiVersion: supply-chain.apps.tanzu.vmware.com/v1alpha1
+kind: SupplyChain
+metadata:
+  creationTimestamp: null
+  name: chain
+spec:
+  defines:
+    group: example.com
+    kind: Chain
+    plural: chains
+    version: v1alpha1
+  description: TODO
+  stages:
+  - componentRef:
+      name: source-git-provider-1.0.0
+    name: source-git-provider
+  - componentRef:
+      name: buildpack-build-1.0.0
+    name: buildpack-build
+  - componentRef:
+      name: conventions-1.0.0
+    name: conventions
+  - componentRef:
+      name: app-config-server-1.0.0
+    name: app-config-server
+  - componentRef:
+      name: carvel-package-1.0.0
+    name: carvel-package
+status: {}

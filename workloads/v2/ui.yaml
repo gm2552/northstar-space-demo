@@ -1,0 +1,28 @@
+kind: Chain
+apiVersion: example.com/v1alpha1
+metadata:
+  name: ui
+spec:
+  carvel:
+    packageName: "ui.tanzu.vmware.com"
+  build:
+    env:
+    - name: BP_NODE_RUN_SCRIPTS
+      value: build
+    - name: BP_WEB_SERVER_ROOT
+      value: dist
+  registry:
+    repository: "tapdev"
+    server: "reg.perfect300rock.com"
+  service:
+    ports:
+    - containerport: "8080"
+      name: "http"
+      port: 80   
+  source:
+    git:
+      url: https://github.com/vmware-tanzu/application-accelerator-samples/
+      branch: main
+    subPath: where-for-dinner/where-for-dinner-ui
+  
+  

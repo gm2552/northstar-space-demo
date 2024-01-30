@@ -1,0 +1,26 @@
+kind: Chain
+apiVersion: example.com/v1alpha1
+metadata:
+  name: crawler
+spec:
+  carvel:
+    packageName: "crawler.tanzu.vmware.com"
+  build:
+    env:
+    - value: "21"
+      name: "BP_JVM_VERSION"  
+  registry:
+    repository: "tapdev"
+    server: "reg.perfect300rock.com"
+  service:
+    ports:
+    - containerport: "8080"
+      name: "http"
+      port: 80 
+  source:
+    git:
+      url: https://github.com/vmware-tanzu/application-accelerator-samples/
+      branch: main
+    subPath: where-for-dinner/where-for-dinner-crawler
+  
+  

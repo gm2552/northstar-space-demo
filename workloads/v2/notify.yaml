@@ -1,0 +1,29 @@
+kind: Chain
+apiVersion: example.com/v1alpha1
+metadata:
+  name: notify
+spec:
+  carvel:
+    packageName: "notify.tanzu.vmware.com"
+  build:
+    env:
+    - value: "21"
+      name: "BP_JVM_VERSION"  
+  registry:
+    repository: "tapdev"
+    server: "reg.perfect300rock.com"
+  service:
+    ports:
+    - containerport: "8080"
+      name: "http"
+      port: 80 
+  env:
+  - name: spring_profiles_active
+    value: mysql      
+  source:
+    git:
+      url: https://github.com/vmware-tanzu/application-accelerator-samples/
+      branch: main
+    subPath: where-for-dinner/where-for-dinner-notify
+  
+  
