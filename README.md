@@ -24,11 +24,11 @@ Change to the `workloads\v2` directory and run the following command substitutin
 to install the supply chain and components.
 
 ```
-kubectl apply -f ./supplychains -n <namepsace> 
+kubectl apply -f ./supplychains -n <namespace> 
 ```
 
 Run the following command substituting the appropriate namespace to submit builds to a supply chain.
 
 ```
-kubectl apply -f . -n <namepsace> 
+kubectl apply -f . -n <namespace> 
 ```
